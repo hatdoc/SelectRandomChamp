@@ -85,119 +85,129 @@ function initFocusMode() {
   document.querySelector('.focused-overlay').addEventListener('click', closeResult);
 }
 
-// Plinko Style: Last Ball Wins (High Tension version)
+// REDESIGNED Pinball: Hundreds of balls, rotating bars, 30s duration
 function initPinball() {
   const canvas = document.getElementById('pinball-canvas');
   if (!canvas) return;
   const ctx = canvas.getContext('2d'), startBtn = document.getElementById('pinball-start'), input = document.getElementById('pinball-input');
   
-  let balls = [], pins = [], isRunning = false;
-  const gravity = 0.12, friction = 0.995, bounciness = 0.7;
+  let balls = [], pins = [], spinners = [], isRunning = false;
+  const gravity = 0.1, friction = 0.998, bounciness = 0.75;
 
   function setupPins() {
-    pins = [];
-    const rows = 15, spacingX = canvas.width / 16, spacingY = 22; // More rows for longer duration
+    pins = []; spinners = [];
+    canvas.width = canvas.parentElement.clientWidth; canvas.height = canvas.parentElement.clientHeight || 450;
+    
+    const rows = 12, spacingX = canvas.width / 14, spacingY = 25;
     for (let r = 0; r < rows; r++) {
       const offset = (r % 2) * (spacingX / 2);
-      for (let c = 0; c < 17; c++) pins.push({ x: c * spacingX + offset, y: 50 + r * spacingY });
+      for (let c = 0; c < 15; c++) {
+        const x = c * spacingX + offset, y = 80 + r * spacingY;
+        // Occasionally place a spinner instead of a pin
+        if (r > 2 && r < rows - 2 && c % 4 === 0 && Math.random() > 0.5) {
+          spinners.push({ x, y, angle: 0, speed: 0.05 + Math.random() * 0.05, length: 40 });
+        } else {
+          pins.push({ x, y });
+        }
+      }
     }
   }
 
   function start() {
     if (isRunning) return;
-    const opts = (input.value || "1,2,3,4,5").split(',').map(o => o.trim()).filter(o => o);
+    const opts = (input.value || "A,B,C,D").split(',').map(o => o.trim()).filter(o => o);
     if (!opts.length) return;
     
     focusTool('pinball-tool');
     setupPins();
     isRunning = true;
     
-    // Staggered release: each ball waits longer to create 30s experience
-    balls = opts.map((opt, i) => ({
-      x: canvas.width / 2 + (Math.random() - 0.5) * 60, 
-      y: -30, 
-      r: 8, 
-      label: opt,
-      vx: (Math.random() - 0.5) * 2, 
-      vy: 1, 
-      finished: false,
-      delay: i * 1500, // Wait 1.5s between each ball release
-      startTime: Date.now(),
-      color: `hsl(${i * 360 / opts.length}, 70%, 60%)`
-    }));
+    balls = [];
+    const ballsPerOpt = 30; // High count for "우수수" effect
+    opts.forEach((opt, i) => {
+      for(let j=0; j<ballsPerOpt; j++) {
+        balls.push({
+          x: canvas.width / 2 + (Math.random() - 0.5) * 80, y: -20 - (j * 15) - (i * 100), r: 6, label: opt,
+          vx: (Math.random() - 0.5) * 3, vy: 1, finished: false,
+          color: `hsl(${(i * 360 / opts.length)}, 70%, 60%)`
+        });
+      }
+    });
 
     function loop() {
-      const now = Date.now();
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
       // Draw Pins
       ctx.fillStyle = '#c89b3c';
       pins.forEach(p => { ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI * 2); ctx.fill(); });
 
+      // Draw and Update Spinners
+      ctx.strokeStyle = '#00cfbc'; ctx.lineWidth = 3;
+      spinners.forEach(s => {
+        s.angle += s.speed;
+        const x1 = s.x + Math.cos(s.angle) * s.length / 2, y1 = s.y + Math.sin(s.angle) * s.length / 2;
+        const x2 = s.x - Math.cos(s.angle) * s.length / 2, y2 = s.y - Math.sin(s.angle) * s.length / 2;
+        ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+      });
+
       let activeBalls = 0;
       balls.forEach(b => {
         if (b.finished) return;
-        
-        // Only update balls that have passed their delay
-        if (now - b.startTime < b.delay) {
-          activeBalls++;
-          return;
-        }
-
         activeBalls++;
         b.vy += gravity; b.x += b.vx; b.y += b.vy;
 
+        // Collision: Pins
         pins.forEach(p => {
           const dx = b.x - p.x, dy = b.y - p.y, dist = Math.sqrt(dx * dx + dy * dy);
           if (dist < b.r + 2) {
             const angle = Math.atan2(dy, dx);
             const speed = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
-            b.vx = Math.cos(angle) * speed * bounciness + (Math.random() - 0.5) * 1.5;
+            b.vx = Math.cos(angle) * speed * bounciness + (Math.random() - 0.5);
             b.vy = Math.sin(angle) * speed * bounciness;
-            b.y += b.vy; // Anti-stuck
+            b.y += b.vy;
           }
         });
 
-        // Walls with friction
-        if (b.x < b.r || b.x > canvas.width - b.r) { 
-          b.vx *= -0.6; 
-          b.x = b.x < b.r ? b.r : canvas.width - b.r; 
-        }
-        
-        // Bounce off bottom a bit before finishing
-        if (b.y > canvas.height - 10) { 
-          b.finished = true; 
-          b.finishTime = Date.now(); 
-        }
+        // Collision: Spinners
+        spinners.forEach(s => {
+          const dx = b.x - s.x, dy = b.y - s.y, dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < s.length / 2 + b.r) {
+            // Simplified line collision
+            const angleToBall = Math.atan2(dy, dx);
+            const diff = Math.abs(angleToBall - s.angle) % Math.PI;
+            if (diff < 0.2 || diff > Math.PI - 0.2) {
+              b.vx = -b.vx * 1.2 + (Math.random() - 0.5) * 5;
+              b.vy = -b.vy * 1.2;
+            }
+          }
+        });
 
-        ctx.fillStyle = b.color; 
-        ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2); ctx.fill();
-        ctx.strokeStyle = "#fff"; ctx.lineWidth = 1; ctx.stroke();
-        ctx.fillStyle = "#fff"; ctx.font = "bold 10px Spiegel"; ctx.textAlign = "center";
-        ctx.fillText(b.label.substring(0, 3), b.x, b.y + 4);
+        if (b.x < b.r || b.x > canvas.width - b.r) { b.vx *= -0.7; b.x = b.x < b.r ? b.r : canvas.width - b.r; }
+        if (b.y > canvas.height - 10) { b.finished = true; b.finishTime = Date.now(); }
+
+        ctx.fillStyle = b.color; ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2); ctx.fill();
       });
 
       if (activeBalls > 0) requestAnimationFrame(loop);
       else {
         isRunning = false;
         const lastBall = balls.reduce((prev, current) => (prev.finishTime > current.finishTime) ? prev : current);
-        setTimeout(() => showBigResult("THE LAST SURVIVOR", lastBall.label), 800);
+        setTimeout(() => showBigResult("THE FINAL WINNER", lastBall.label), 1000);
       }
     }
     requestAnimationFrame(loop);
   }
 
   startBtn.addEventListener('click', start);
-  window.addEventListener('resize', () => { 
-    canvas.width = canvas.parentElement.clientWidth; 
-    canvas.height = canvas.parentElement.clientHeight || 450; 
-    setupPins(); 
-  });
-  setTimeout(() => { canvas.width = canvas.parentElement.clientWidth; canvas.height = 450; setupPins(); }, 500);
+  window.addEventListener('resize', setupPins);
+  setTimeout(setupPins, 500);
 }
 
+// FIXED Ladder Game: Path tracing logic fix
 function initLadder() {
-  const canvas = document.getElementById('ladder-canvas'), ctx = canvas.getContext('2d'), startBtn = document.getElementById('ladder-start');
+  const canvas = document.getElementById('ladder-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d'), startBtn = document.getElementById('ladder-start');
   const pIn = document.getElementById('ladder-players-input'), rIn = document.getElementById('ladder-results-input');
 
   function drawInitial() {
@@ -219,11 +229,11 @@ function initLadder() {
     
     focusTool('ladder-tool');
     const spacing = canvas.width / (count + 1), lines = [];
-    // Increase complexity: more horizontal bars
     for (let i = 0; i < count - 1; i++) { 
-      const lineCount = 8 + Math.floor(Math.random() * 6); // Way more lines
+      const lineCount = 10;
       for (let j = 0; j < lineCount; j++) lines.push({ from: i, to: i + 1, y: 70 + Math.random() * 270 }); 
     }
+    const sortedLines = [...lines].sort((a,b) => a.y - b.y);
     
     let pathIdx = 0;
     function drawStep() {
@@ -236,30 +246,22 @@ function initLadder() {
       }
       lines.forEach(l => { ctx.beginPath(); ctx.moveTo(spacing * (l.from + 1), l.y); ctx.lineTo(spacing * (l.to + 1), l.y); ctx.stroke(); });
 
-      // Trace paths one by one with delay for tension
       for(let p = 0; p <= pathIdx; p++) {
         let currX = p, currY = 60;
-        ctx.strokeStyle = `hsl(${p * 360 / count}, 80%, 50%)`; 
-        ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(spacing * (currX + 1), currY);
-        [...lines].sort((a,b) => a.y - b.y).forEach(l => {
+        ctx.strokeStyle = `hsl(${p * 360 / count}, 80%, 50%)`; ctx.lineWidth = 5;
+        ctx.beginPath(); ctx.moveTo(spacing * (currX + 1), currY);
+        sortedLines.forEach(l => {
           if (l.from === currX) { ctx.lineTo(spacing*(currX+1), l.y); currX = l.to; ctx.lineTo(spacing*(currX+1), l.y); }
           else if (l.to === currX) { ctx.lineTo(spacing*(currX+1), l.y); currX = l.from; ctx.lineTo(spacing*(currX+1), l.y); }
         });
         ctx.lineTo(spacing * (currX + 1), 350); ctx.stroke();
       }
       
-      if (pathIdx < count - 1) { 
-        pathIdx++; 
-        setTimeout(drawStep, 1500); // Slow down for tension
-      } else { 
-        setTimeout(() => showBigResult("LADDER COMPLETE", "Victory is decided!"), 1000); 
-      }
+      if (pathIdx < count - 1) { pathIdx++; setTimeout(drawStep, 1500); }
+      else setTimeout(() => showBigResult("LADDER COMPLETE", "Results are in!"), 1000);
     }
     drawStep();
   });
-  setTimeout(drawInitial, 500);
-  window.addEventListener('resize', drawInitial);
-}
   setTimeout(drawInitial, 500);
   window.addEventListener('resize', drawInitial);
 }
@@ -268,12 +270,17 @@ function initTeamSplitter() {
   const list = document.getElementById('team-pair-list'), addBtn = document.getElementById('add-pair-btn'), startBtn = document.getElementById('team-start');
   function createRow() {
     const row = document.createElement('div'); row.className = 'team-pair-row';
-    row.innerHTML = `<input type="text" class="pair-input" placeholder="BLUE"><button class="gap-btn">></button><input type="text" class="pair-input" placeholder="RED">`;
-    row.querySelector('.gap-btn').addEventListener('click', e => e.target.textContent = e.target.textContent === '>' ? '<' : '>');
+    // Cycles through >, <, =
+    row.innerHTML = `<input type="text" class="pair-input" placeholder="BLUE"><button class="gap-btn">=</button><input type="text" class="pair-input" placeholder="RED">`;
+    row.querySelector('.gap-btn').addEventListener('click', e => {
+      const ops = ['=', '>', '<'];
+      const curr = ops.indexOf(e.target.textContent);
+      e.target.textContent = ops[(curr + 1) % ops.length];
+    });
     list.appendChild(row);
   }
   addBtn.addEventListener('click', createRow);
-  startBtn.addEventListener('click', () => { focusTool('team-tool'); setTimeout(() => showBigResult("GAP ANALYSIS", "Balanced Teams Calculated!"), 1500); });
+  startBtn.addEventListener('click', () => { focusTool('team-tool'); setTimeout(() => showBigResult("팀짜기 완료", "밸런스가 조정되었습니다!"), 1000); });
   for(let i=0; i<5; i++) createRow();
 }
 
