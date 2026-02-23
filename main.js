@@ -42,7 +42,14 @@ const TRANSLATIONS = {
     'how-it-works-p1': 'Our algorithm uses real-time data from the Riot Games Data Dragon API to fetch the latest champion information.',
     'tips-desc-title': 'Master Your Champion',
     'tips-desc-p1': "Each recommendation comes with pro tips and strategy guides to help you understand your power spikes and combos.",
-    'disclaimer': "WhatChampToPlay isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games."
+    'disclaimer': "WhatChampToPlay isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games.",
+    'pinball-mode': 'Mode:',
+    'pinball-mode-first': 'First Fall Wins',
+    'pinball-mode-last': 'Last Fall Wins',
+    'pinball-balls': 'Balls:',
+    'ladder-players': 'Players (Comma separated):',
+    'ladder-results': 'Results (Comma separated):',
+    'team-names-label': 'Enter Names (One per line):'
   },
   'ko_KR': {
     'title': '뭐 할까?',
@@ -78,7 +85,14 @@ const TRANSLATIONS = {
     'how-it-works-p1': '라이엇 게임즈의 Data Dragon API를 실시간으로 활용하여 챔피언의 최신 정보를 가져옵니다.',
     'tips-desc-title': '챔피언 마스터하기',
     'tips-desc-p1': "단순히 이름만 알려주는 것이 아니라, 스킬 콤보와 운영법을 한눈에 확인할 수 있는 팁을 제공합니다.",
-    'disclaimer': "WhatChampToPlay는 Riot Games의 승인을 받지 않았으며 Riot Games의 견해나 의견을 반영하지 않습니다."
+    'disclaimer': "WhatChampToPlay는 Riot Games의 승인을 받지 않았으며 Riot Games의 견해나 의견을 반영하지 않습니다.",
+    'pinball-mode': '모드:',
+    'pinball-mode-first': '처음 떨어진게 당첨',
+    'pinball-mode-last': '가장 나중에 떨어진게 당첨',
+    'pinball-balls': '공 개수:',
+    'ladder-players': '플레이어 (쉼표로 구분):',
+    'ladder-results': '결과 (쉼표로 구분):',
+    'team-names-label': '이름 입력 (한 줄에 한 명씩):'
   }
 };
 
@@ -217,31 +231,40 @@ function setupEventListeners() {
   });
 }
 
-// Simplified physics-ish Pinball
+// Improved Pinball
 function initPinball() {
   const canvas = document.getElementById('pinball-canvas');
   const ctx = canvas.getContext('2d');
   const startBtn = document.getElementById('pinball-start');
   const input = document.getElementById('pinball-input');
+  const modeSelect = document.getElementById('pinball-mode-select');
+  const ballCountInput = document.getElementById('pinball-ball-count');
+  
+  document.querySelectorAll('.preset-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      ballCountInput.value = btn.dataset.count;
+    });
+  });
 
   let animationId;
-  let ball = { x: 0, y: 0, vx: 0, vy: 0, radius: 8 };
+  let balls = [];
   let pins = [];
   let buckets = [];
   let isRunning = false;
+  let finishedBalls = [];
 
   function setupBoard() {
     canvas.width = canvas.parentElement.clientWidth;
     canvas.height = 300;
     pins = [];
-    const rows = 8;
-    const spacingX = canvas.width / 10;
+    const rows = 9;
+    const spacingX = canvas.width / 11;
     const spacingY = 25;
     
     for (let r = 0; r < rows; r++) {
       const offset = (r % 2) * (spacingX / 2);
-      for (let c = 0; c < 11; c++) {
-        pins.push({ x: c * spacingX + offset, y: 50 + r * spacingY });
+      for (let c = 0; c < 12; c++) {
+        pins.push({ x: c * spacingX + offset, y: 40 + r * spacingY });
       }
     }
   }
@@ -250,6 +273,7 @@ function initPinball() {
     if (isRunning) return;
     isRunning = true;
     setupBoard();
+    finishedBalls = [];
     
     const opts = options.split(',').map(o => o.trim()).filter(o => o);
     if (opts.length === 0) { isRunning = false; return; }
@@ -260,13 +284,19 @@ function initPinball() {
       width: canvas.width / opts.length
     }));
 
-    ball = {
-      x: canvas.width / 2 + (Math.random() - 0.5) * 20,
-      y: 10,
-      vx: (Math.random() - 0.5) * 2,
-      vy: 2,
-      radius: 8
-    };
+    const count = parseInt(ballCountInput.value) || 1;
+    balls = [];
+    for (let i = 0; i < count; i++) {
+      balls.push({
+        x: canvas.width / 2 + (Math.random() - 0.5) * 40,
+        y: -10 - (i * 10), // Staggered entry
+        vx: (Math.random() - 0.5) * 4,
+        vy: 2 + Math.random() * 2,
+        radius: 6,
+        finished: false,
+        color: `hsl(${Math.random() * 360}, 70%, 60%)`
+      });
+    }
 
     animate();
   }
@@ -289,47 +319,73 @@ function initPinball() {
       ctx.fillStyle = currentState.theme === 'dark' ? '#f0e6d2' : '#333';
       ctx.font = '12px Spiegel';
       ctx.textAlign = 'center';
-      ctx.fillText(b.text.substring(0, 8), b.x + b.width / 2, canvas.height - 15);
+      ctx.fillText(b.text.substring(0, 10), b.x + b.width / 2, canvas.height - 15);
     });
 
-    // Update Ball
-    ball.vy += 0.15; // Gravity
-    ball.x += ball.vx;
-    ball.y += ball.vy;
+    let allFinished = true;
+    const mode = modeSelect.value;
 
-    // Collisions
-    pins.forEach(p => {
-      const dx = ball.x - p.x;
-      const dy = ball.y - p.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < ball.radius + 3) {
-        const angle = Math.atan2(dy, dx);
-        ball.vx = Math.cos(angle) * 3 + (Math.random() - 0.5);
-        ball.vy = Math.sin(angle) * 3;
+    balls.forEach(ball => {
+      if (ball.finished) return;
+      allFinished = false;
+
+      // Update Physics
+      ball.vy += 0.25; // Faster Gravity
+      ball.x += ball.vx;
+      ball.y += ball.vy;
+
+      // Collisions with Pins
+      pins.forEach(p => {
+        const dx = ball.x - p.x;
+        const dy = ball.y - p.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < ball.radius + 3) {
+          const angle = Math.atan2(dy, dx);
+          const speed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy) * 0.8;
+          ball.vx = Math.cos(angle) * speed + (Math.random() - 0.5) * 2;
+          ball.vy = Math.sin(angle) * speed;
+        }
+      });
+
+      // Walls
+      if (ball.x < ball.radius || ball.x > canvas.width - ball.radius) {
+        ball.vx *= -0.8;
+        ball.x = ball.x < ball.radius ? ball.radius : canvas.width - ball.radius;
+      }
+
+      // Draw Ball
+      ctx.fillStyle = ball.color;
+      ctx.beginPath();
+      ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Check Finish
+      if (ball.y > canvas.height - 20) {
+        ball.finished = true;
+        const winnerBucket = buckets.find(b => ball.x >= b.x && ball.x <= b.x + b.width);
+        finishedBalls.push({ ball, bucket: winnerBucket });
+        
+        if (mode === 'first' && finishedBalls.length === 1) {
+            // End early if first mode? No, let all balls fall but first one is winner
+        }
       }
     });
 
-    // Walls
-    if (ball.x < ball.radius || ball.x > canvas.width - ball.radius) ball.vx *= -0.8;
-
-    // Draw Ball
-    ctx.fillStyle = '#00cfbc';
-    ctx.beginPath();
-    ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.shadowBlur = 10;
-    ctx.shadowColor = '#00cfbc';
-
-    if (ball.y < canvas.height - 20) {
+    if (!allFinished) {
       animationId = requestAnimationFrame(animate);
     } else {
       isRunning = false;
-      const winner = buckets.find(b => ball.x >= b.x && ball.x <= b.x + b.width);
-      if (winner) alert('Result: ' + winner.text);
+      let finalResult;
+      if (mode === 'first') {
+        finalResult = finishedBalls[0]?.bucket?.text;
+      } else {
+        finalResult = finishedBalls[finishedBalls.length - 1]?.bucket?.text;
+      }
+      if (finalResult) alert('Result: ' + finalResult);
     }
   }
 
-  startBtn.addEventListener('click', () => start(input.value || "Yes, No, Maybe"));
+  startBtn.addEventListener('click', () => start(input.value || "1, 2, 3, 4, 5"));
   window.addEventListener('resize', setupBoard);
   setupBoard();
 }
@@ -338,44 +394,45 @@ function initLadder() {
   const canvas = document.getElementById('ladder-canvas');
   const ctx = canvas.getContext('2d');
   const startBtn = document.getElementById('ladder-start');
-  const input = document.getElementById('ladder-input');
+  const playersInput = document.getElementById('ladder-players-input');
+  const resultsInput = document.getElementById('ladder-results-input');
 
   function run() {
-    const raw = input.value || "A,B,C,D / 1,2,3,4";
-    const [playersStr, resultsStr] = raw.split('/');
-    if (!playersStr || !resultsStr) return alert("Format: Name1, Name2 / Result1, Result2");
+    const players = (playersInput.value || "A, B, C, D").split(',').map(s => s.trim()).filter(s => s);
+    const results = (resultsInput.value || "1, 2, 3, 4").split(',').map(s => s.trim()).filter(s => s);
     
-    const players = playersStr.split(',').map(s => s.trim());
-    const results = resultsStr.split(',').map(s => s.trim());
     const count = Math.min(players.length, results.length);
+    if (count < 2) return alert("Enter at least 2 players and results.");
 
     canvas.width = canvas.parentElement.clientWidth;
     canvas.height = 300;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     const spacing = canvas.width / (count + 1);
-    const lines = [];
-
+    
     // Draw Vertical Lines
     for (let i = 0; i < count; i++) {
       const x = spacing * (i + 1);
       ctx.strokeStyle = '#c89b3c';
+      ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.moveTo(x, 40);
       ctx.lineTo(x, 260);
       ctx.stroke();
 
-      ctx.fillStyle = '#f0e6d2';
+      ctx.fillStyle = currentState.theme === 'dark' ? '#f0e6d2' : '#333';
+      ctx.font = 'bold 14px Spiegel';
       ctx.textAlign = 'center';
       ctx.fillText(players[i], x, 30);
-      ctx.fillText(results[i], x, 280);
+      ctx.fillText(results[i], x, 285);
     }
 
     // Draw Random Horizontal Bars
+    ctx.lineWidth = 2;
     for (let i = 0; i < count - 1; i++) {
       const x1 = spacing * (i + 1);
       const x2 = spacing * (i + 2);
-      for (let j = 0; j < 4; j++) {
+      for (let j = 0; j < 3; j++) {
         const y = 60 + Math.random() * 180;
         ctx.beginPath();
         ctx.moveTo(x1, y);

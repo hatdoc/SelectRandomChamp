@@ -94,6 +94,25 @@
             </div>
             <div class="tool-controls">
               <input type="text" id="pinball-input" placeholder="Options (comma separated)" data-i18n-placeholder="options-placeholder">
+              <div class="pinball-options">
+                <div class="option-group">
+                  <label data-i18n="pinball-mode">Mode:</label>
+                  <select id="pinball-mode-select">
+                    <option value="first" data-i18n="pinball-mode-first">First Fall Wins</option>
+                    <option value="last" data-i18n="pinball-mode-last">Last Fall Wins</option>
+                  </select>
+                </div>
+                <div class="option-group">
+                  <label data-i18n="pinball-balls">Balls:</label>
+                  <div class="ball-presets">
+                    <button class="preset-btn" data-count="1">1</button>
+                    <button class="preset-btn" data-count="30">30</button>
+                    <button class="preset-btn" data-count="50">50</button>
+                    <button class="preset-btn" data-count="100">100</button>
+                  </div>
+                  <input type="number" id="pinball-ball-count" value="1" min="1" max="200" style="width: 60px; margin-left: 10px;">
+                </div>
+              </div>
               <button id="pinball-start" class="primary-btn" data-i18n="start-btn">Launch Ball</button>
             </div>
           </div>
@@ -105,7 +124,16 @@
               <canvas id="ladder-canvas"></canvas>
             </div>
             <div class="tool-controls">
-              <textarea id="ladder-input" placeholder="Players vs Results" data-i18n-placeholder="ladder-placeholder"></textarea>
+              <div class="ladder-inputs">
+                <div class="input-group">
+                  <label data-i18n="ladder-players">Players (Comma separated):</label>
+                  <input type="text" id="ladder-players-input" placeholder="Player 1, Player 2, Player 3...">
+                </div>
+                <div class="input-group">
+                  <label data-i18n="ladder-results">Results (Comma separated):</label>
+                  <input type="text" id="ladder-results-input" placeholder="Win, Lose, 5000G, Penalty...">
+                </div>
+              </div>
               <button id="ladder-start" class="primary-btn" data-i18n="start-btn">Run Ladder</button>
             </div>
           </div>
@@ -114,7 +142,10 @@
           <div class="tool-card" id="team-tool">
             <h2 data-i18n="team-title">Team Splitter</h2>
             <div class="team-container">
-              <textarea id="team-input" placeholder="Enter names (one per line)" data-i18n-placeholder="team-placeholder"></textarea>
+              <div class="input-group">
+                <label data-i18n="team-names-label">Enter Names (One per line):</label>
+                <textarea id="team-input" placeholder="Enter names (one per line)" data-i18n-placeholder="team-placeholder"></textarea>
+              </div>
               <div class="team-settings">
                 <label for="team-count" data-i18n="teams-label">Teams:</label>
                 <input type="number" id="team-count" value="2" min="2" max="10">

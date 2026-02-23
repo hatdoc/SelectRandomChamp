@@ -188,7 +188,7 @@ header p {
 .tool-card {
   background: var(--lol-card-bg);
   border: 1px solid var(--lol-card-border);
-  padding: 2rem;
+  padding: 1.5rem;
   border-radius: 4px;
   position: relative;
   overflow: hidden;
@@ -209,9 +209,9 @@ header p {
 .tool-card h2 {
   font-family: 'Beaufort for LoL', serif;
   color: var(--lol-gold);
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   text-transform: uppercase;
-  font-size: 1.5rem;
+  font-size: 1.3rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -219,24 +219,89 @@ header p {
 
 .tool-controls {
   margin-top: auto;
-  padding-top: 1.5rem;
+  padding-top: 1rem;
   display: flex;
-  gap: 1rem;
+  gap: 0.8rem;
   flex-direction: column;
 }
 
-input[type="text"], textarea, input[type="number"] {
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid var(--lol-card-border);
-  color: var(--lol-text);
-  padding: 0.8rem;
-  font-family: 'Spiegel', sans-serif;
-  border-radius: 2px;
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
 }
 
-input:focus, textarea:focus {
+.input-group label {
+  font-size: 0.85rem;
+  color: var(--lol-blue-grey);
+  font-weight: bold;
+}
+
+input[type="text"], textarea, input[type="number"], select {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--lol-card-border);
+  color: var(--lol-text);
+  padding: 0.7rem;
+  font-family: 'Spiegel', sans-serif;
+  border-radius: 2px;
+  width: 100%;
+}
+
+input:focus, textarea:focus, select:focus {
   outline: none;
   border-color: var(--lol-gold);
+  background: rgba(0, 0, 0, 0.6);
+}
+
+/* Pinball Specific */
+.pinball-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 0.8rem;
+  border: 1px solid var(--lol-card-border);
+  margin-bottom: 0.5rem;
+}
+
+.option-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.option-group label {
+  font-size: 0.85rem;
+  min-width: 50px;
+}
+
+.ball-presets {
+  display: flex;
+  gap: 5px;
+}
+
+.preset-btn {
+  background: var(--lol-card-border);
+  color: var(--lol-gold);
+  border: 1px solid var(--lol-gold);
+  padding: 2px 8px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: var(--transition);
+}
+
+.preset-btn:hover {
+  background: var(--lol-gold);
+  color: var(--lol-dark-bg);
+}
+
+/* Ladder Specific */
+.ladder-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 textarea {
