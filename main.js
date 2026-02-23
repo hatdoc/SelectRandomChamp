@@ -85,21 +85,21 @@ function initFocusMode() {
   document.querySelector('.focused-overlay').addEventListener('click', closeResult);
 }
 
-// Plinko Style: Last Ball Wins
+// Plinko Style: Last Ball Wins (High Tension version)
 function initPinball() {
   const canvas = document.getElementById('pinball-canvas');
   if (!canvas) return;
   const ctx = canvas.getContext('2d'), startBtn = document.getElementById('pinball-start'), input = document.getElementById('pinball-input');
   
-  let balls = [], pins = [], isRunning = false, finishedCount = 0;
-  const gravity = 0.25, friction = 0.99, bounciness = 0.6;
+  let balls = [], pins = [], isRunning = false;
+  const gravity = 0.12, friction = 0.995, bounciness = 0.7;
 
   function setupPins() {
     pins = [];
-    const rows = 10, spacingX = canvas.width / 14, spacingY = 30;
+    const rows = 15, spacingX = canvas.width / 16, spacingY = 22; // More rows for longer duration
     for (let r = 0; r < rows; r++) {
       const offset = (r % 2) * (spacingX / 2);
-      for (let c = 0; c < 15; c++) pins.push({ x: c * spacingX + offset, y: 60 + r * spacingY });
+      for (let c = 0; c < 17; c++) pins.push({ x: c * spacingX + offset, y: 50 + r * spacingY });
     }
   }
 
@@ -110,39 +110,69 @@ function initPinball() {
     
     focusTool('pinball-tool');
     setupPins();
-    isRunning = true; finishedCount = 0;
+    isRunning = true;
+    
+    // Staggered release: each ball waits longer to create 30s experience
     balls = opts.map((opt, i) => ({
-      x: canvas.width / 2 + (Math.random() - 0.5) * 40, y: -20 - (i * 15), r: 8, label: opt,
-      vx: (Math.random() - 0.5) * 2, vy: 2, finished: false,
+      x: canvas.width / 2 + (Math.random() - 0.5) * 60, 
+      y: -30, 
+      r: 8, 
+      label: opt,
+      vx: (Math.random() - 0.5) * 2, 
+      vy: 1, 
+      finished: false,
+      delay: i * 1500, // Wait 1.5s between each ball release
+      startTime: Date.now(),
       color: `hsl(${i * 360 / opts.length}, 70%, 60%)`
     }));
 
     function loop() {
+      const now = Date.now();
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw Pins
       ctx.fillStyle = '#c89b3c';
-      pins.forEach(p => { ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI * 2); ctx.fill(); });
+      pins.forEach(p => { ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI * 2); ctx.fill(); });
 
       let activeBalls = 0;
       balls.forEach(b => {
         if (b.finished) return;
+        
+        // Only update balls that have passed their delay
+        if (now - b.startTime < b.delay) {
+          activeBalls++;
+          return;
+        }
+
         activeBalls++;
         b.vy += gravity; b.x += b.vx; b.y += b.vy;
 
         pins.forEach(p => {
           const dx = b.x - p.x, dy = b.y - p.y, dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < b.r + 3) {
+          if (dist < b.r + 2) {
             const angle = Math.atan2(dy, dx);
             const speed = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
-            b.vx = Math.cos(angle) * speed * bounciness + (Math.random() - 0.5) * 2;
+            b.vx = Math.cos(angle) * speed * bounciness + (Math.random() - 0.5) * 1.5;
             b.vy = Math.sin(angle) * speed * bounciness;
             b.y += b.vy; // Anti-stuck
           }
         });
 
-        if (b.x < b.r || b.x > canvas.width - b.r) { b.vx *= -0.8; b.x = b.x < b.r ? b.r : canvas.width - b.r; }
-        if (b.y > canvas.height - 10) { b.finished = true; finishedCount++; b.finishTime = Date.now(); }
+        // Walls with friction
+        if (b.x < b.r || b.x > canvas.width - b.r) { 
+          b.vx *= -0.6; 
+          b.x = b.x < b.r ? b.r : canvas.width - b.r; 
+        }
+        
+        // Bounce off bottom a bit before finishing
+        if (b.y > canvas.height - 10) { 
+          b.finished = true; 
+          b.finishTime = Date.now(); 
+        }
 
-        ctx.fillStyle = b.color; ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = b.color; 
+        ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = "#fff"; ctx.lineWidth = 1; ctx.stroke();
         ctx.fillStyle = "#fff"; ctx.font = "bold 10px Spiegel"; ctx.textAlign = "center";
         ctx.fillText(b.label.substring(0, 3), b.x, b.y + 4);
       });
@@ -151,15 +181,19 @@ function initPinball() {
       else {
         isRunning = false;
         const lastBall = balls.reduce((prev, current) => (prev.finishTime > current.finishTime) ? prev : current);
-        setTimeout(() => showBigResult("LAST BALL WINNER", lastBall.label), 500);
+        setTimeout(() => showBigResult("THE LAST SURVIVOR", lastBall.label), 800);
       }
     }
     requestAnimationFrame(loop);
   }
 
   startBtn.addEventListener('click', start);
-  window.addEventListener('resize', () => { canvas.width = canvas.parentElement.clientWidth; canvas.height = canvas.parentElement.clientHeight; setupPins(); });
-  setTimeout(() => { canvas.width = canvas.parentElement.clientWidth; canvas.height = 350; setupPins(); }, 500);
+  window.addEventListener('resize', () => { 
+    canvas.width = canvas.parentElement.clientWidth; 
+    canvas.height = canvas.parentElement.clientHeight || 450; 
+    setupPins(); 
+  });
+  setTimeout(() => { canvas.width = canvas.parentElement.clientWidth; canvas.height = 450; setupPins(); }, 500);
 }
 
 function initLadder() {
@@ -167,49 +201,65 @@ function initLadder() {
   const pIn = document.getElementById('ladder-players-input'), rIn = document.getElementById('ladder-results-input');
 
   function drawInitial() {
-    canvas.width = canvas.parentElement.clientWidth; canvas.height = 350;
+    canvas.width = canvas.parentElement.clientWidth; canvas.height = 400;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.strokeStyle = '#c89b3c'; ctx.lineWidth = 2;
     const spacing = canvas.width / 3;
     for(let i=1; i<=2; i++) {
-      const x = spacing * i; ctx.beginPath(); ctx.moveTo(x, 50); ctx.lineTo(x, 300); ctx.stroke();
+      const x = spacing * i; ctx.beginPath(); ctx.moveTo(x, 50); ctx.lineTo(x, 350); ctx.stroke();
       ctx.fillStyle = '#f0e6d2'; ctx.font = 'bold 14px Spiegel'; ctx.textAlign = 'center';
-      ctx.fillText("Player " + i, x, 40); ctx.fillText("Result " + i, x, 320);
+      ctx.fillText("Player " + i, x, 40); ctx.fillText("???", x, 370);
     }
   }
 
   startBtn.addEventListener('click', () => {
-    const players = (pIn.value || "A,B,C,D").split(',').map(s => s.trim()).filter(s => s);
-    const results = (rIn.value || "1,2,3,4").split(',').map(s => s.trim()).filter(s => s);
+    const players = (pIn.value || "A,B,C,D,E").split(',').map(s => s.trim()).filter(s => s);
+    const results = (rIn.value || "1,2,3,4,5").split(',').map(s => s.trim()).filter(s => s);
     const count = Math.min(players.length, results.length); if (count < 2) return;
     
     focusTool('ladder-tool');
     const spacing = canvas.width / (count + 1), lines = [];
-    for (let i = 0; i < count - 1; i++) { for (let j = 0; j < 5; j++) lines.push({ from: i, to: i + 1, y: 70 + Math.random() * 220 }); }
+    // Increase complexity: more horizontal bars
+    for (let i = 0; i < count - 1; i++) { 
+      const lineCount = 8 + Math.floor(Math.random() * 6); // Way more lines
+      for (let j = 0; j < lineCount; j++) lines.push({ from: i, to: i + 1, y: 70 + Math.random() * 270 }); 
+    }
     
     let pathIdx = 0;
-    function draw() {
+    function drawStep() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.strokeStyle = '#c89b3c'; ctx.lineWidth = 2;
       for (let i = 0; i < count; i++) {
-        const x = spacing * (i + 1); ctx.beginPath(); ctx.moveTo(x, 60); ctx.lineTo(x, 300); ctx.stroke();
+        const x = spacing * (i + 1); ctx.beginPath(); ctx.moveTo(x, 60); ctx.lineTo(x, 350); ctx.stroke();
         ctx.fillStyle = '#f0e6d2'; ctx.font = 'bold 14px Spiegel'; ctx.textAlign = 'center';
-        ctx.fillText(players[i], x, 50); ctx.fillText(results[i], x, 320);
+        ctx.fillText(players[i], x, 50); ctx.fillText(results[i], x, 370);
       }
       lines.forEach(l => { ctx.beginPath(); ctx.moveTo(spacing * (l.from + 1), l.y); ctx.lineTo(spacing * (l.to + 1), l.y); ctx.stroke(); });
 
-      let currX = pathIdx, currY = 60;
-      ctx.strokeStyle = '#00cfbc'; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(spacing * (currX + 1), currY);
-      [...lines].sort((a,b) => a.y - b.y).forEach(l => {
-        if (l.from === currX) { ctx.lineTo(spacing*(currX+1), l.y); currX = l.to; ctx.lineTo(spacing*(currX+1), l.y); }
-        else if (l.to === currX) { ctx.lineTo(spacing*(currX+1), l.y); currX = l.from; ctx.lineTo(spacing*(currX+1), l.y); }
-      });
-      ctx.lineTo(spacing * (currX + 1), 300); ctx.stroke();
-      if (pathIdx < count - 1) { pathIdx++; setTimeout(draw, 1000); }
-      else setTimeout(() => showBigResult("LADDER FINISHED", "All results revealed!"), 500);
+      // Trace paths one by one with delay for tension
+      for(let p = 0; p <= pathIdx; p++) {
+        let currX = p, currY = 60;
+        ctx.strokeStyle = `hsl(${p * 360 / count}, 80%, 50%)`; 
+        ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(spacing * (currX + 1), currY);
+        [...lines].sort((a,b) => a.y - b.y).forEach(l => {
+          if (l.from === currX) { ctx.lineTo(spacing*(currX+1), l.y); currX = l.to; ctx.lineTo(spacing*(currX+1), l.y); }
+          else if (l.to === currX) { ctx.lineTo(spacing*(currX+1), l.y); currX = l.from; ctx.lineTo(spacing*(currX+1), l.y); }
+        });
+        ctx.lineTo(spacing * (currX + 1), 350); ctx.stroke();
+      }
+      
+      if (pathIdx < count - 1) { 
+        pathIdx++; 
+        setTimeout(drawStep, 1500); // Slow down for tension
+      } else { 
+        setTimeout(() => showBigResult("LADDER COMPLETE", "Victory is decided!"), 1000); 
+      }
     }
-    draw();
+    drawStep();
   });
+  setTimeout(drawInitial, 500);
+  window.addEventListener('resize', drawInitial);
+}
   setTimeout(drawInitial, 500);
   window.addEventListener('resize', drawInitial);
 }
