@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>What Champ to Play? - LoL Randomizer</title>
+  <title>What Champ to Play? - LoL Randomizer & Streamer Toolkit</title>
   <meta name="google-adsense-account" content="ca-pub-8983851567536524">
   <link rel="stylesheet" href="style.css">
   <!-- Google AdSense -->
@@ -14,59 +14,141 @@
 </head>
 <body class="lol-theme">
   <div id="app">
-    <button id="theme-toggle" class="theme-toggle" data-i18n="theme-toggle">Light Mode</button>
+    <div class="top-bar">
+      <div class="premium-theme-toggle">
+        <input type="checkbox" id="theme-toggle" class="theme-checkbox">
+        <label for="theme-toggle" class="theme-label">
+          <span class="sun"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58a.996.996 0 00-1.41 0 .996.996 0 000 1.41l1.42 1.42c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L5.99 4.58zm12.02 12.02a.996.996 0 00-1.41 0 .996.996 0 000 1.41l1.42 1.42c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41l-1.42-1.42zM18.01 4.58l-1.42 1.42a.996.996 0 000 1.41c.39.39 1.02.39 1.41 0l1.42-1.42a.996.996 0 000-1.41.996.996 0 00-1.41 0zM5.99 16.59l-1.42 1.42a.996.996 0 000 1.41c.39.39 1.02.39 1.41 0l1.42-1.42a.996.996 0 000-1.41.996.996 0 00-1.41 0z"/></svg></span>
+          <span class="moon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/></svg></span>
+          <span class="ball"></span>
+        </label>
+      </div>
+    </div>
     <header>
       <h1 data-i18n="title">What Champ to Play?</h1>
       <p data-i18n="subtitle">Select your role and find your champion!</p>
     </header>
 
     <main>
-      <section class="role-selector">
-        <button class="role-btn" data-role="TOP">
-          <img src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/top.png" alt="Top" onerror="this.src='https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-role-selector/global/default/role-icon-top.png'">
-          <span data-i18n="role-top">Top</span>
-        </button>
-        <button class="role-btn" data-role="JUNGLE">
-          <img src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/jungle.png" alt="Jungle" onerror="this.src='https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-role-selector/global/default/role-icon-jungle.png'">
-          <span data-i18n="role-jungle">Jungle</span>
-        </button>
-        <button class="role-btn" data-role="MIDDLE">
-          <img src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/mid.png" alt="Mid" onerror="this.src='https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-role-selector/global/default/role-icon-mid.png'">
-          <span data-i18n="role-mid">Mid</span>
-        </button>
-        <button class="role-btn" data-role="BOTTOM">
-          <img src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/bot.png" alt="ADC" onerror="this.src='https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-role-selector/global/default/role-icon-bot.png'">
-          <span data-i18n="role-adc">ADC</span>
-        </button>
-        <button class="role-btn" data-role="UTILITY">
-          <img src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/support.png" alt="Support" onerror="this.src='https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-role-selector/global/default/role-icon-support.png'">
-          <span data-i18n="role-support">Support</span>
-        </button>
-      </section>
+      <nav class="tool-tabs">
+        <button class="tab-btn active" data-tab="champion-randomizer" data-i18n="tab-randomizer">Randomizer</button>
+        <button class="tab-btn" data-tab="streamer-toolkit" data-i18n="tab-toolkit">Streamer Toolkit</button>
+      </nav>
 
-      <section id="result-area" class="hidden">
-        <div class="champion-card">
-          <div class="champion-image-container">
-            <img id="champ-splash" src="" alt="Champion Splash">
-          </div>
-          <div class="champion-info">
-            <h2 id="champ-name">Champion Name</h2>
-            <p id="champ-title">Champion Title</p>
-            <div class="champ-tips">
-              <h3 data-i18n="tips-header">Pro Tips</h3>
-              <ul id="champ-tips-list"></ul>
+      <!-- Champion Randomizer Content -->
+      <div id="champion-randomizer" class="tab-content active">
+        <section class="role-selector">
+          <button class="role-btn" data-role="TOP">
+            <img src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/top.png" alt="Top">
+            <span data-i18n="role-top">Top</span>
+          </button>
+          <button class="role-btn" data-role="JUNGLE">
+            <img src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/jungle.png" alt="Jungle">
+            <span data-i18n="role-jungle">Jungle</span>
+          </button>
+          <button class="role-btn" data-role="MIDDLE">
+            <img src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/mid.png" alt="Mid">
+            <span data-i18n="role-mid">Mid</span>
+          </button>
+          <button class="role-btn" data-role="BOTTOM">
+            <img src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/bot.png" alt="ADC">
+            <span data-i18n="role-adc">ADC</span>
+          </button>
+          <button class="role-btn" data-role="UTILITY">
+            <img src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/support.png" alt="Support">
+            <span data-i18n="role-support">Support</span>
+          </button>
+        </section>
+
+        <section id="result-area" class="hidden">
+          <div class="champion-card">
+            <div class="champion-image-container">
+              <img id="champ-splash" src="" alt="Champion Splash">
             </div>
-            <button id="reroll-btn" class="primary-btn" data-i18n="reroll-btn">Roll Again</button>
+            <div class="champion-info">
+              <h2 id="champ-name">Champion Name</h2>
+              <p id="champ-title">Champion Title</p>
+              <div class="champ-tips">
+                <h3 data-i18n="tips-header">Pro Tips</h3>
+                <ul id="champ-tips-list"></ul>
+              </div>
+              <button id="reroll-btn" class="primary-btn" data-i18n="reroll-btn">Roll Again</button>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <div id="loading" class="hidden">
-        <div class="spinner"></div>
-        <p data-i18n="loading">Summoning champion...</p>
+        <div id="loading" class="hidden">
+          <div class="spinner"></div>
+          <p data-i18n="loading">Summoning champion...</p>
+        </div>
       </div>
 
-      <!-- Content Sections for AdSense Approval -->
+      <!-- Streamer Toolkit Content -->
+      <div id="streamer-toolkit" class="tab-content">
+        <div class="toolkit-grid">
+          <!-- Pinball -->
+          <div class="tool-card" id="pinball-tool">
+            <h2 data-i18n="pinball-title">Pinball Randomizer</h2>
+            <div class="pinball-container" id="pinball-board">
+              <canvas id="pinball-canvas"></canvas>
+            </div>
+            <div class="tool-controls">
+              <input type="text" id="pinball-input" placeholder="Options (comma separated)" data-i18n-placeholder="options-placeholder">
+              <button id="pinball-start" class="primary-btn" data-i18n="start-btn">Launch Ball</button>
+            </div>
+          </div>
+
+          <!-- Ladder Game -->
+          <div class="tool-card" id="ladder-tool">
+            <h2 data-i18n="ladder-title">Ghost Leg (Ladder)</h2>
+            <div class="ladder-container" id="ladder-board">
+              <canvas id="ladder-canvas"></canvas>
+            </div>
+            <div class="tool-controls">
+              <textarea id="ladder-input" placeholder="Players vs Results" data-i18n-placeholder="ladder-placeholder"></textarea>
+              <button id="ladder-start" class="primary-btn" data-i18n="start-btn">Run Ladder</button>
+            </div>
+          </div>
+
+          <!-- Team Splitter -->
+          <div class="tool-card" id="team-tool">
+            <h2 data-i18n="team-title">Team Splitter</h2>
+            <div class="team-container">
+              <textarea id="team-input" placeholder="Enter names (one per line)" data-i18n-placeholder="team-placeholder"></textarea>
+              <div class="team-settings">
+                <label for="team-count" data-i18n="teams-label">Teams:</label>
+                <input type="number" id="team-count" value="2" min="2" max="10">
+              </div>
+              <button id="team-start" class="primary-btn" data-i18n="split-btn">Split Teams</button>
+              <div id="team-results" class="results-grid"></div>
+            </div>
+          </div>
+
+          <!-- Mission Generator -->
+          <div class="tool-card" id="mission-tool">
+            <h2 data-i18n="mission-title">LoL Challenge Mission</h2>
+            <div class="mission-container">
+              <div id="mission-display" class="mission-card">
+                <div class="mission-icon">?</div>
+                <p id="mission-text" data-i18n="mission-start-prompt">Click to get a mission!</p>
+              </div>
+              <button id="mission-start" class="primary-btn" data-i18n="mission-btn">New Mission</button>
+            </div>
+          </div>
+
+          <!-- Tournament Bracket -->
+          <div class="tool-card" id="bracket-tool">
+            <h2 data-i18n="bracket-title">Tournament Bracket</h2>
+            <div class="bracket-container">
+              <textarea id="bracket-input" placeholder="Enter 4 or 8 names (one per line)" data-i18n-placeholder="bracket-placeholder"></textarea>
+              <button id="bracket-start" class="primary-btn" data-i18n="bracket-btn">Generate Bracket</button>
+              <div id="bracket-display" class="bracket-tree"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Content Sections for SEO/AdSense -->
       <section class="content-depth">
         <div class="info-card">
           <h2 data-i18n="about-title">About What Champ to Play?</h2>
