@@ -19,6 +19,8 @@ const TRANSLATIONS = {
     'tips-header': 'Pro Tips',
     'reroll-btn': 'Roll Again',
     'loading': 'Summoning champion...',
+    'theme-toggle-light': 'Light Mode',
+    'theme-toggle-dark': 'Dark Mode',
     'disclaimer': "WhatChampToPlay isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing League of Legends."
   },
   'ko_KR': {
@@ -32,6 +34,8 @@ const TRANSLATIONS = {
     'tips-header': '플레이 꿀팁',
     'reroll-btn': '다시 뽑기',
     'loading': '챔피언을 불러오는 중...',
+    'theme-toggle-light': '라이트 모드',
+    'theme-toggle-dark': '다크 모드',
     'disclaimer': "WhatChampToPlay는 Riot Games의 승인을 받지 않았으며 Riot Games 또는 League of Legends를 제작하거나 관리하는 데 공식적으로 관여한 모든 사람의 견해나 의견을 반영하지 않습니다."
   }
 };
@@ -41,7 +45,8 @@ let currentState = {
   version: null,
   locale: CONFIG.DEFAULT_LOCALE,
   champions: [],
-  selectedRole: null
+  selectedRole: null,
+  theme: localStorage.getItem('theme') || 'dark'
 };
 
 /**
@@ -49,6 +54,7 @@ let currentState = {
  */
 async function init() {
   setLocale();
+  applyTheme();
   updateUIText();
   
   try {
@@ -73,7 +79,7 @@ function setLocale() {
 }
 
 /**
- * Update UI text based on current locale
+ * Update UI text based on current locale and theme
  */
 function updateUIText() {
   const elements = document.querySelectorAll('[data-i18n]');
@@ -81,10 +87,30 @@ function updateUIText() {
   
   elements.forEach(el => {
     const key = el.getAttribute('data-i18n');
-    if (strings[key]) {
+    if (key === 'theme-toggle') {
+      const themeKey = currentState.theme === 'dark' ? 'theme-toggle-light' : 'theme-toggle-dark';
+      el.textContent = strings[themeKey];
+    } else if (strings[key]) {
       el.textContent = strings[key];
     }
   });
+}
+
+/**
+ * Apply the selected theme
+ */
+function applyTheme() {
+  document.documentElement.setAttribute('data-theme', currentState.theme);
+  updateUIText();
+}
+
+/**
+ * Toggle between light and dark themes
+ */
+function toggleTheme() {
+  currentState.theme = currentState.theme === 'dark' ? 'light' : 'dark';
+  localStorage.setItem('theme', currentState.theme);
+  applyTheme();
 }
 
 /**
@@ -110,6 +136,11 @@ async function fetchChampions() {
  * Setup UI event listeners
  */
 function setupEventListeners() {
+  const themeBtn = document.getElementById('theme-toggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', toggleTheme);
+  }
+
   const roleButtons = document.querySelectorAll('.role-btn');
   roleButtons.forEach(btn => {
     btn.addEventListener('click', () => {

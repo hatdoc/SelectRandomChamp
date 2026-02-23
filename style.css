@@ -7,6 +7,19 @@
   --lol-dark-bg: #010a13;
   --lol-card-bg: rgba(9, 20, 40, 0.85);
   --lol-card-border: #1e2328;
+  --bg-gradient: radial-gradient(circle, var(--lol-dark-blue) 0%, var(--lol-dark-bg) 100%);
+  --tip-bg: rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="light"] {
+  --lol-dark-blue: #f0f5ff;
+  --lol-dark-bg: #ffffff;
+  --lol-text: #1e2328;
+  --lol-blue-grey: #5b5a56;
+  --lol-card-bg: rgba(255, 255, 255, 0.9);
+  --lol-card-border: #d0a85c;
+  --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  --tip-bg: rgba(200, 155, 60, 0.1);
 }
 
 * {
@@ -16,7 +29,8 @@
 }
 
 body.lol-theme {
-  background: radial-gradient(circle, var(--lol-dark-blue) 0%, var(--lol-dark-bg) 100%);
+  background: var(--bg-gradient);
+  background-attachment: fixed;
   color: var(--lol-text);
   font-family: 'Spiegel', sans-serif;
   min-height: 100vh;
@@ -24,6 +38,7 @@ body.lol-theme {
   flex-direction: column;
   align-items: center;
   padding: 2rem 1rem;
+  transition: background 0.3s, color 0.3s;
 }
 
 #app {
@@ -73,6 +88,8 @@ header p {
   background-color: rgba(200, 155, 60, 0.05);
   position: relative;
   overflow: hidden;
+  /* Darker background for icons to stand out */
+  background-image: linear-gradient(rgba(1, 10, 19, 0.7), rgba(1, 10, 19, 0.7));
 }
 
 .role-btn img {
