@@ -118,6 +118,11 @@ canvas { width: 100%; height: 100%; filter: drop-shadow(0 0 2px rgba(0,0,0,0.5))
 .pair-input:focus { border-color: var(--lol-gold) !important; outline: none; }
 .gap-btn { background: #010a13; color: var(--lol-gold); border: 1px solid var(--lol-gold); width: 50px; height: 45px; cursor: pointer; font-size: 1.5rem; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-family: serif; }
 
+.tool-actions { display: flex; gap: 1rem; margin-top: 1rem; }
+.tool-actions button { flex: 1; }
+
+.team-actions { display: flex; gap: 1rem; }
+
 /* Result Overlay */
 #big-result-overlay {
   position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -139,4 +144,4 @@ canvas { width: 100%; height: 100%; filter: drop-shadow(0 0 2px rgba(0,0,0,0.5))
 /* Champ Card */
 .champion-card { background: var(--lol-card-bg); border: 1px solid var(--lol-card-border); padding: 2rem; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 2rem; }
 #champ-splash { width: 100%; max-width: 650px; border: 2px solid var(--lol-gold); }
-#champ-name { font-family: 'Beaufort for LoL', serif; font-size: 3.5rem; color: var(--lol-gold); }
+#champ-name { font-family: 'Beaufort for LoL', serif; font-size: 3rem; color: var(--lol-gold); }

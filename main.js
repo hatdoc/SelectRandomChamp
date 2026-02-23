@@ -179,8 +179,10 @@ function initPinball() {
 function initLadder() {
   const canvas = document.getElementById('ladder-canvas');
   if (!canvas) return;
-  const ctx = canvas.getContext('2d'), startBtn = document.getElementById('ladder-start');
+  const ctx = canvas.getContext('2d'), startBtn = document.getElementById('ladder-start'), skipBtn = document.getElementById('ladder-skip');
   const pIn = document.getElementById('ladder-players-input'), rIn = document.getElementById('ladder-results-input');
+
+  let isRunning = false, isSkipped = false;
 
   function drawInitial() {
     canvas.width = canvas.parentElement.clientWidth; canvas.height = 400;
@@ -195,15 +197,94 @@ function initLadder() {
   }
 
   startBtn.addEventListener('click', () => {
+    if (isRunning) return;
     const players = (pIn.value || "A,B,C,D,E").split(',').map(s => s.trim()).filter(s => s);
     const results = (rIn.value || "1,2,3,4,5").split(',').map(s => s.trim()).filter(s => s);
     const count = Math.min(players.length, results.length); if (count < 2) return;
-    focusTool('ladder-tool');
+    
+    focusTool('ladder-tool'); isRunning = true; isSkipped = false;
+    skipBtn.classList.remove('hidden');
+    
     const spacing = canvas.width / (count + 1), lines = [];
     for (let i = 0; i < count - 1; i++) { for (let j = 0; j < 10; j++) lines.push({ from: i, to: i + 1, y: 70 + Math.random() * 270 }); }
     const sortedLines = [...lines].sort((a,b) => a.y - b.y);
+    
     let pathIdx = 0;
-    function step() {
+    function revealPath() {
+      if (isSkipped) {
+        drawAllPaths(players, results, count, spacing, lines, sortedLines);
+        return;
+      }
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawStatic(players, results, count, spacing, lines, pathIdx);
+
+      // Animate current marker
+      let currX = pathIdx, currY = 60;
+      let pathPoints = [{x: spacing * (currX + 1), y: currY}];
+      sortedLines.forEach(l => {
+        if (l.from === currX) { pathPoints.push({x: spacing * (currX + 1), y: l.y}); currX = l.to; pathPoints.push({x: spacing * (currX + 1), y: l.y}); }
+        else if (l.to === currX) { pathPoints.push({x: spacing * (currX + 1), y: l.y}); currX = l.from; pathPoints.push({x: spacing * (currX + 1), y: l.y}); }
+      });
+      pathPoints.push({x: spacing * (currX + 1), y: 350});
+
+      let pointIdx = 0;
+      function animateMarker() {
+        if (isSkipped) return revealPath();
+        if (pointIdx < pathPoints.length - 1) {
+          const start = pathPoints[pointIdx], end = pathPoints[pointIdx+1];
+          let progress = 0;
+          function drawMove() {
+            if (isSkipped) return revealPath();
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawStatic(players, results, count, spacing, lines, pathIdx);
+            
+            // Draw already completed current path
+            ctx.strokeStyle = `hsl(${pathIdx * 360 / count}, 80%, 50%)`; ctx.lineWidth = 5;
+            ctx.beginPath(); ctx.moveTo(pathPoints[0].x, pathPoints[0].y);
+            for(let i=0; i<=pointIdx; i++) ctx.lineTo(pathPoints[i].x, pathPoints[i].y);
+            const midX = start.x + (end.x - start.x) * progress, midY = start.y + (end.y - start.y) * progress;
+            ctx.lineTo(midX, midY); ctx.stroke();
+            
+            // Draw marker ball
+            ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(midX, midY, 6, 0, Math.PI*2); ctx.fill();
+
+            progress += 0.15;
+            if (progress < 1) requestAnimationFrame(drawMove);
+            else { pointIdx++; animateMarker(); }
+          }
+          drawMove();
+        } else {
+          if (pathIdx < count - 1) { pathIdx++; setTimeout(revealPath, 1000); }
+          else finish();
+        }
+      }
+      animateMarker();
+    }
+
+    function drawStatic(players, results, count, spacing, lines, currentRevealIdx) {
+      ctx.strokeStyle = '#c89b3c'; ctx.lineWidth = 2;
+      for (let i = 0; i < count; i++) {
+        const x = spacing * (i + 1); ctx.beginPath(); ctx.moveTo(x, 60); ctx.lineTo(x, 350); ctx.stroke();
+        ctx.fillStyle = '#f0e6d2'; ctx.font = 'bold 14px Spiegel'; ctx.textAlign = 'center';
+        ctx.fillText(players[i], x, 50);
+        if (i < currentRevealIdx) ctx.fillText(results[i], x, 370);
+        else ctx.fillText("???", x, 370);
+      }
+      lines.forEach(l => { ctx.beginPath(); ctx.moveTo(spacing*(l.from+1), l.y); ctx.lineTo(spacing*(l.to+1), l.y); ctx.stroke(); });
+      // Draw already completed FULL paths
+      for(let p = 0; p < currentRevealIdx; p++) {
+        let cx = p; ctx.strokeStyle = `hsl(${p * 360 / count}, 80%, 50%)`; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.moveTo(spacing*(cx+1), 60);
+        sortedLines.forEach(l => {
+          if (l.from === cx) { ctx.lineTo(spacing*(cx+1), l.y); cx = l.to; ctx.lineTo(spacing*(cx+1), l.y); }
+          else if (l.to === cx) { ctx.lineTo(spacing*(cx+1), l.y); cx = l.from; ctx.lineTo(spacing*(cx+1), l.y); }
+        });
+        ctx.lineTo(spacing*(cx+1), 350); ctx.stroke();
+      }
+    }
+
+    function drawAllPaths() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.strokeStyle = '#c89b3c'; ctx.lineWidth = 2;
       for (let i = 0; i < count; i++) {
@@ -212,19 +293,24 @@ function initLadder() {
         ctx.fillText(players[i], x, 50); ctx.fillText(results[i], x, 370);
       }
       lines.forEach(l => { ctx.beginPath(); ctx.moveTo(spacing*(l.from+1), l.y); ctx.lineTo(spacing*(l.to+1), l.y); ctx.stroke(); });
-      for(let p = 0; p <= pathIdx; p++) {
-        let currX = p, currY = 60; ctx.strokeStyle = `hsl(${p * 360 / count}, 80%, 50%)`; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(spacing*(currX+1), currY);
+      for(let p = 0; p < count; p++) {
+        let cx = p; ctx.strokeStyle = `hsl(${p * 360 / count}, 80%, 50%)`; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.moveTo(spacing*(cx+1), 60);
         sortedLines.forEach(l => {
-          if (l.from === currX) { ctx.lineTo(spacing*(currX+1), l.y); currX = l.to; ctx.lineTo(spacing*(currX+1), l.y); }
-          else if (l.to === currX) { ctx.lineTo(spacing*(currX+1), l.y); currX = l.from; ctx.lineTo(spacing*(currX+1), l.y); }
+          if (l.from === cx) { ctx.lineTo(spacing*(cx+1), l.y); cx = l.to; ctx.lineTo(spacing*(cx+1), l.y); }
+          else if (l.to === cx) { ctx.lineTo(spacing*(cx+1), l.y); cx = l.from; ctx.lineTo(spacing*(cx+1), l.y); }
         });
-        ctx.lineTo(spacing * (currX + 1), 350); ctx.stroke();
+        ctx.lineTo(spacing*(cx+1), 350); ctx.stroke();
       }
-      if (pathIdx < count - 1) { pathIdx++; setTimeout(step, 1500); }
-      else setTimeout(() => showBigResult("LADDER COMPLETE", "Results Revealed!"), 1000);
+      finish();
     }
-    step();
+
+    function finish() { isRunning = false; skipBtn.classList.add('hidden'); setTimeout(() => showBigResult("LADDER COMPLETE", "Results are in!"), 500); }
+
+    revealPath();
   });
+
+  skipBtn.addEventListener('click', () => isSkipped = true);
   window.addEventListener('resize', drawInitial); setTimeout(drawInitial, 500);
 }
 
