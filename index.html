@@ -14,6 +14,15 @@
 </head>
 <body class="lol-theme">
   <div class="focused-overlay"></div>
+  <!-- New Large Result Overlay -->
+  <div id="big-result-overlay" class="hidden">
+    <div class="result-content">
+      <h2 id="result-title">RESULT</h2>
+      <div id="result-text">WINNER NAME</div>
+      <button onclick="closeResult()" class="primary-btn">CLOSE</button>
+    </div>
+  </div>
+
   <div id="app">
     <div class="top-bar">
       <div class="premium-theme-toggle">
@@ -40,23 +49,18 @@
       <div id="champion-randomizer" class="tab-content active">
         <section class="role-selector">
           <button class="role-btn" data-role="TOP">
-            <img src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/top.png" alt="Top">
             <span data-i18n="role-top">Top</span>
           </button>
           <button class="role-btn" data-role="JUNGLE">
-            <img src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/jungle.png" alt="Jungle">
             <span data-i18n="role-jungle">Jungle</span>
           </button>
           <button class="role-btn" data-role="MIDDLE">
-            <img src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/mid.png" alt="Mid">
             <span data-i18n="role-mid">Mid</span>
           </button>
           <button class="role-btn" data-role="BOTTOM">
-            <img src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/bot.png" alt="ADC">
             <span data-i18n="role-adc">ADC</span>
           </button>
           <button class="role-btn" data-role="UTILITY">
-            <img src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/support.png" alt="Support">
             <span data-i18n="role-support">Support</span>
           </button>
         </section>
@@ -87,34 +91,16 @@
       <!-- Streamer Toolkit Content -->
       <div id="streamer-toolkit" class="tab-content">
         <div class="toolkit-grid">
-          <!-- Pinball -->
+          <!-- Pinball (Now Roulette style) -->
           <div class="tool-card" id="pinball-tool">
-            <h2 data-i18n="pinball-title">Pinball Randomizer</h2>
+            <h2 data-i18n="pinball-title">Roulette Randomizer</h2>
             <div class="pinball-container" id="pinball-board">
               <canvas id="pinball-canvas"></canvas>
+              <div class="roulette-pointer"></div>
             </div>
             <div class="tool-controls">
               <input type="text" id="pinball-input" placeholder="Options (comma separated)" data-i18n-placeholder="options-placeholder">
-              <div class="pinball-options">
-                <div class="option-group">
-                  <label data-i18n="pinball-mode">Mode:</label>
-                  <select id="pinball-mode-select">
-                    <option value="first" data-i18n="pinball-mode-first">First Fall Wins</option>
-                    <option value="last" data-i18n="pinball-mode-last">Last Fall Wins</option>
-                  </select>
-                </div>
-                <div class="option-group">
-                  <label data-i18n="pinball-balls">Balls:</label>
-                  <div class="ball-presets">
-                    <button class="preset-btn" data-count="1">1</button>
-                    <button class="preset-btn" data-count="30">30</button>
-                    <button class="preset-btn" data-count="50">50</button>
-                    <button class="preset-btn" data-count="100">100</button>
-                  </div>
-                  <input type="number" id="pinball-ball-count" value="1" min="1" max="200" style="width: 60px; margin-left: 10px;">
-                </div>
-              </div>
-              <button id="pinball-start" class="primary-btn" data-i18n="start-btn">Launch Ball</button>
+              <button id="pinball-start" class="primary-btn" data-i18n="start-btn">Spin Wheel</button>
             </div>
           </div>
 
@@ -127,32 +113,32 @@
             <div class="tool-controls">
               <div class="ladder-inputs">
                 <div class="input-group">
-                  <label data-i18n="ladder-players">Players (Comma separated):</label>
-                  <input type="text" id="ladder-players-input" placeholder="Player 1, Player 2, Player 3...">
+                  <label data-i18n="ladder-players">Players:</label>
+                  <input type="text" id="ladder-players-input" placeholder="A, B, C, D">
                 </div>
                 <div class="input-group">
-                  <label data-i18n="ladder-results">Results (Comma separated):</label>
-                  <input type="text" id="ladder-results-input" placeholder="Win, Lose, 5000G, Penalty...">
+                  <label data-i18n="ladder-results">Results:</label>
+                  <input type="text" id="ladder-results-input" placeholder="1, 2, 3, 4">
                 </div>
               </div>
               <button id="ladder-start" class="primary-btn" data-i18n="start-btn">Run Ladder</button>
             </div>
           </div>
 
-          <!-- Team Splitter -->
+          <!-- Team Splitter (LoL Gap Style) -->
           <div class="tool-card" id="team-tool">
-            <h2 data-i18n="team-title">Team Splitter</h2>
+            <h2 data-i18n="team-title">Team Gap Splitter</h2>
             <div class="team-container">
               <div class="input-group">
-                <label data-i18n="team-names-label">Enter Names (One per line):</label>
-                <textarea id="team-input" placeholder="Enter names (one per line)" data-i18n-placeholder="team-placeholder"></textarea>
-              </div>
-              <div class="team-settings">
-                <label for="team-count" data-i18n="teams-label">Teams:</label>
-                <input type="number" id="team-count" value="2" min="2" max="10">
+                <label data-i18n="team-names-label">Players (One per line):</label>
+                <textarea id="team-input" placeholder="Enter names..."></textarea>
               </div>
               <button id="team-start" class="primary-btn" data-i18n="split-btn">Split Teams</button>
-              <div id="team-results" class="results-grid"></div>
+              <div id="team-results" class="vs-display">
+                <div class="team-side team-a"></div>
+                <div class="gap-indicator">VS</div>
+                <div class="team-side team-b"></div>
+              </div>
             </div>
           </div>
 
@@ -167,7 +153,8 @@
               <button id="mission-start" class="primary-btn" data-i18n="mission-btn">New Mission</button>
             </div>
           </div>
-
+        </div>
+      </div>
           <!-- Tournament Bracket -->
           <div class="tool-card" id="bracket-tool">
             <h2 data-i18n="bracket-title">Tournament Bracket</h2>
