@@ -206,7 +206,10 @@ function initLadder() {
     skipBtn.classList.remove('hidden');
     
     const spacing = canvas.width / (count + 1), lines = [];
-    for (let i = 0; i < count - 1; i++) { for (let j = 0; j < 10; j++) lines.push({ from: i, to: i + 1, y: 70 + Math.random() * 270 }); }
+    for (let i = 0; i < count - 1; i++) { 
+      const lineCount = 15; // Increased complexity (more lines)
+      for (let j = 0; j < lineCount; j++) lines.push({ from: i, to: i + 1, y: 70 + Math.random() * 270 }); 
+    }
     const sortedLines = [...lines].sort((a,b) => a.y - b.y);
     
     let pathIdx = 0;
@@ -249,13 +252,13 @@ function initLadder() {
             // Draw marker ball
             ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(midX, midY, 6, 0, Math.PI*2); ctx.fill();
 
-            progress += 0.15;
+            progress += 0.06; // Slower speed (was 0.15)
             if (progress < 1) requestAnimationFrame(drawMove);
             else { pointIdx++; animateMarker(); }
           }
           drawMove();
         } else {
-          if (pathIdx < count - 1) { pathIdx++; setTimeout(revealPath, 1000); }
+          if (pathIdx < count - 1) { pathIdx++; setTimeout(revealPath, 1200); }
           else finish();
         }
       }
@@ -305,7 +308,7 @@ function initLadder() {
       finish();
     }
 
-    function finish() { isRunning = false; skipBtn.classList.add('hidden'); setTimeout(() => showBigResult("LADDER COMPLETE", "Results are in!"), 500); }
+    function finish() { isRunning = false; skipBtn.classList.add('hidden'); setTimeout(() => showBigResult("LADDER FINISHED", "ALL RESULTS REVEALED!"), 500); }
 
     revealPath();
   });
