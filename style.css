@@ -254,6 +254,29 @@ header p {
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* Advertisement Styling */
+.ad-container {
+  margin: 3rem auto;
+  max-width: 100%;
+  text-align: center;
+  min-height: 100px;
+  background: rgba(0, 0, 0, 0.1);
+  border: 1px dashed var(--lol-blue-grey);
+  position: relative;
+}
+
+.ad-container::before {
+  content: 'ADVERTISEMENT';
+  position: absolute;
+  top: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--lol-dark-bg);
+  padding: 0 10px;
+  font-size: 10px;
+  color: var(--lol-blue-grey);
+}
+
 footer {
   margin-top: 5rem;
   text-align: center;
