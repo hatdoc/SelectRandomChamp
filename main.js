@@ -226,14 +226,18 @@ function setupEventListeners() {
     });
   });
 
-  document.getElementById('reroll-btn').addEventListener('click', () => {
-    if (currentState.selectedRole) pickRandomChampion(currentState.selectedRole);
+  // Reroll button - ensure it works even if dynamically shown
+  document.addEventListener('click', (e) => {
+    if (e.target && e.target.id === 'reroll-btn') {
+      if (currentState.selectedRole) pickRandomChampion(currentState.selectedRole);
+    }
   });
 }
 
 // Improved Pinball
 function initPinball() {
   const canvas = document.getElementById('pinball-canvas');
+  if (!canvas) return;
   const ctx = canvas.getContext('2d');
   const startBtn = document.getElementById('pinball-start');
   const input = document.getElementById('pinball-input');
@@ -330,7 +334,7 @@ function initPinball() {
       allFinished = false;
 
       // Update Physics
-      ball.vy += 0.25; // Faster Gravity
+      ball.vy += 0.35; // Faster Gravity
       ball.x += ball.vx;
       ball.y += ball.vy;
 
@@ -341,7 +345,7 @@ function initPinball() {
         const dist = Math.sqrt(dx * dx + dy * dy);
         if (dist < ball.radius + 3) {
           const angle = Math.atan2(dy, dx);
-          const speed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy) * 0.8;
+          const speed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy) * 0.85;
           ball.vx = Math.cos(angle) * speed + (Math.random() - 0.5) * 2;
           ball.vy = Math.sin(angle) * speed;
         }
@@ -364,10 +368,6 @@ function initPinball() {
         ball.finished = true;
         const winnerBucket = buckets.find(b => ball.x >= b.x && ball.x <= b.x + b.width);
         finishedBalls.push({ ball, bucket: winnerBucket });
-        
-        if (mode === 'first' && finishedBalls.length === 1) {
-            // End early if first mode? No, let all balls fall but first one is winner
-        }
       }
     });
 
@@ -392,6 +392,7 @@ function initPinball() {
 
 function initLadder() {
   const canvas = document.getElementById('ladder-canvas');
+  if (!canvas) return;
   const ctx = canvas.getContext('2d');
   const startBtn = document.getElementById('ladder-start');
   const playersInput = document.getElementById('ladder-players-input');
@@ -451,6 +452,8 @@ function initTeamSplitter() {
   const countInput = document.getElementById('team-count');
   const resultArea = document.getElementById('team-results');
 
+  if (!startBtn) return;
+
   startBtn.addEventListener('click', () => {
     const names = input.value.split('\n').map(n => n.trim()).filter(n => n);
     if (names.length === 0) return;
@@ -479,6 +482,8 @@ function initMissionGenerator() {
   const text = document.getElementById('mission-text');
   const icon = document.querySelector('.mission-icon');
 
+  if (!btn) return;
+
   btn.addEventListener('click', () => {
     display.classList.remove('active');
     void display.offsetWidth; // Trigger reflow
@@ -496,6 +501,8 @@ function initBracketGenerator() {
   const btn = document.getElementById('bracket-start');
   const input = document.getElementById('bracket-input');
   const display = document.getElementById('bracket-display');
+
+  if (!btn) return;
 
   btn.addEventListener('click', () => {
     const names = input.value.split('\n').map(n => n.trim()).filter(n => n);
@@ -565,7 +572,8 @@ async function displayChampion(championId) {
 
     document.getElementById('champ-name').textContent = champion.name;
     document.getElementById('champ-title').textContent = champion.title;
-    document.getElementById('champ-splash').src = `${CONFIG.DATA_DRAGON_BASE}/img/champion/splash/${championId}_0.jpg`;
+    // Fix splash URL: Data Dragon splash images are in /cdn/img/champion/splash/
+    document.getElementById('champ-splash').src = `https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${championId}_0.jpg`;
 
     const tipsList = document.getElementById('champ-tips-list');
     tipsList.innerHTML = '';
@@ -580,14 +588,17 @@ async function displayChampion(championId) {
     document.getElementById('result-area').scrollIntoView({ behavior: 'smooth' });
     showLoading(false);
   } catch (error) {
+    console.error("Error displaying champion:", error);
     showLoading(false);
   }
 }
 
 function showLoading(isLoading) {
   const loadingEl = document.getElementById('loading');
-  if (isLoading) loadingEl.classList.remove('hidden');
-  else loadingEl.classList.add('hidden');
+  if (loadingEl) {
+    if (isLoading) loadingEl.classList.remove('hidden');
+    else loadingEl.classList.add('hidden');
+  }
 }
 
 init();
