@@ -26,172 +26,117 @@
   --tip-bg: rgba(200, 155, 60, 0.1);
 }
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
 body.lol-theme {
-  background: var(--bg-gradient);
-  background-attachment: fixed;
-  color: var(--lol-text);
-  font-family: 'Spiegel', sans-serif;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 0 1rem 2rem;
-  transition: var(--transition);
+  background: var(--bg-gradient); background-attachment: fixed;
+  color: var(--lol-text); font-family: 'Spiegel', sans-serif;
+  min-height: 100vh; display: flex; flex-direction: column;
+  align-items: center; padding: 0 1rem 2rem; transition: var(--transition);
 }
 
-#app {
-  width: 100%;
-  max-width: 1200px;
-}
+#app { width: 100%; max-width: 1200px; }
 
 /* Big Result Overlay */
 #big-result-overlay {
-  position: fixed;
-  top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(0, 0, 0, 0.9);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10000;
-  animation: fadeIn 0.5s ease-out;
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.9); display: flex; align-items: center;
+  justify-content: center; z-index: 10000; animation: fadeIn 0.5s ease-out;
 }
+#big-result-overlay.hidden { display: none !important; }
 
 .result-content {
-  text-align: center;
-  background: var(--lol-dark-bg);
-  padding: 4rem;
-  border: 2px solid var(--lol-gold);
-  box-shadow: 0 0 50px var(--lol-gold);
-  border-radius: 4px;
-}
-
-#result-title {
-  color: var(--lol-gold);
-  font-family: 'Beaufort for LoL', serif;
-  font-size: 2rem;
-  letter-spacing: 5px;
-  margin-bottom: 2rem;
+  text-align: center; background: var(--lol-dark-bg); padding: 4rem;
+  border: 2px solid var(--lol-gold); box-shadow: 0 0 50px var(--lol-gold); border-radius: 4px;
 }
 
 #result-text {
-  font-family: 'Beaufort for LoL', serif;
-  font-size: 5rem;
-  color: #fff;
-  text-shadow: 0 0 20px var(--accent-color);
-  margin-bottom: 3rem;
+  font-family: 'Beaufort for LoL', serif; font-size: 5rem; color: #fff;
+  text-shadow: 0 0 20px var(--accent-color); margin-bottom: 3rem;
   animation: scaleUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-@keyframes scaleUp { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-
 /* Focus Mode */
 .focused-overlay {
-  display: none;
-  position: fixed;
-  top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(8px);
-  z-index: 1500;
+  display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px); z-index: 1500;
 }
-
 body.has-focus .focused-overlay { display: block; }
 
 .tool-card.focused {
-  position: fixed;
-  top: 50%; left: 50%;
+  position: fixed; top: 50%; left: 50%;
   transform: translate(-50%, -50%) scale(1.1) !important;
-  width: 90vw; height: 85vh;
-  max-width: 1000px;
-  z-index: 2000;
-  background: var(--lol-dark-bg);
-  border: 2px solid var(--accent-color);
+  width: 90vw; height: 85vh; max-width: 1000px; z-index: 2000;
+  background: var(--lol-dark-bg); border: 2px solid var(--accent-color);
   box-shadow: 0 0 100px rgba(0,0,0,0.9), var(--hextech-glow);
 }
 
-/* Tabs & Top Bar */
-.top-bar { width: 100%; display: flex; justify-content: flex-end; padding: 1.5rem 0; }
-.premium-theme-toggle { position: relative; }
-.theme-checkbox { opacity: 0; position: absolute; }
-.theme-label {
-  background-color: #111; width: 70px; height: 34px; border-radius: 50px; position: relative;
-  padding: 5px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
-  border: 1px solid var(--lol-gold); box-shadow: 0 0 10px rgba(200, 155, 60, 0.2);
+/* Roulette Scroll UI */
+.roulette-scroll-container {
+  width: 100%; height: 150px; background: #000; border: 2px solid var(--lol-card-border);
+  position: relative; overflow: hidden; margin-bottom: 1.5rem;
 }
-.theme-label .ball {
-  background-color: var(--lol-gold); width: 26px; height: 26px; position: absolute;
-  left: 4px; top: 3px; border-radius: 50%; transition: transform 0.3s; z-index: 2;
+.roulette-window { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+.roulette-tape {
+  display: flex; position: absolute; left: 0; transition: transform 5s cubic-bezier(0.1, 0, 0.1, 1);
+  will-change: transform;
 }
-.theme-checkbox:checked + .theme-label .ball { transform: translateX(34px); }
+.roulette-item {
+  min-width: 150px; height: 100px; display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem; font-weight: bold; color: #fff; border-right: 1px solid rgba(255,255,255,0.1);
+  padding: 0 20px; text-transform: uppercase; background: linear-gradient(to bottom, #1e2328, #010a13);
+}
+.roulette-marker {
+  position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 4px; height: 100%;
+  background: var(--lol-gold); box-shadow: 0 0 15px var(--lol-gold); z-index: 5;
+}
 
+/* Team Pair UI */
+.team-pair-list { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.5rem; max-height: 400px; overflow-y: auto; padding-right: 10px; }
+.team-pair-row { display: flex; align-items: center; gap: 1rem; background: rgba(0,0,0,0.3); padding: 0.8rem; border: 1px solid var(--lol-card-border); border-radius: 4px; }
+.pair-input { flex: 1; border: none !important; background: transparent !important; text-align: center; font-weight: bold; font-size: 1.1rem; }
+.gap-btn {
+  background: var(--lol-dark-bg); color: var(--lol-gold); border: 1px solid var(--lol-gold);
+  width: 50px; height: 40px; cursor: pointer; font-size: 1.5rem; display: flex; align-items: center;
+  justify-content: center; transition: 0.2s;
+}
+.gap-btn:hover { background: var(--lol-gold); color: var(--lol-dark-bg); }
+.remove-pair { color: #ff4655; cursor: pointer; font-size: 1.2rem; padding: 0 10px; }
+
+.team-actions { display: flex; gap: 1rem; }
+.secondary-btn { background: var(--lol-dark-bg); color: var(--lol-gold); border: 1px solid var(--lol-gold); padding: 0.8rem 1.5rem; cursor: pointer; font-family: 'Beaufort for LoL', serif; }
+
+/* Tabs & Core UI */
 .tool-tabs { display: flex; justify-content: center; gap: 1.5rem; margin-bottom: 3rem; border-bottom: 1px solid var(--lol-card-border); padding-bottom: 0.5rem; }
 .tab-btn {
   background: none; border: none; color: var(--lol-blue-grey); font-family: 'Beaufort for LoL', serif;
   font-size: 1.3rem; text-transform: uppercase; letter-spacing: 2px; cursor: pointer; padding: 0.8rem 2rem;
   transition: var(--transition); position: relative;
 }
-.tab-btn.active { color: var(--lol-gold); text-shadow: 0 0 10px rgba(200, 155, 60, 0.5); }
-.tab-btn.active::after {
-  content: ''; position: absolute; bottom: -6px; left: 10%; width: 80%; height: 3px;
-  background: var(--lol-gold); box-shadow: 0 0 15px var(--lol-gold);
-}
+.tab-btn.active { color: var(--lol-gold); }
+.tab-btn.active::after { content: ''; position: absolute; bottom: -6px; left: 10%; width: 80%; height: 3px; background: var(--lol-gold); }
 
-.tab-content { display: none; animation: fadeIn 0.5s ease-out; }
-.tab-content.active { display: block; }
-
-/* Toolkit UI */
 .toolkit-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 2.5rem; }
 .tool-card {
   background: var(--lol-card-bg); border: 1px solid var(--lol-card-border); padding: 2rem;
-  border-radius: 4px; position: relative; overflow: hidden; display: flex; flex-direction: column;
+  border-radius: 4px; position: relative; display: flex; flex-direction: column;
   box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5); transition: var(--transition);
 }
-.tool-card:hover { border-color: var(--accent-color); box-shadow: var(--hextech-glow); transform: translateY(-8px); }
+.tool-card h2 { font-family: 'Beaufort for LoL', serif; color: var(--lol-gold); margin-bottom: 1.5rem; text-transform: uppercase; border-bottom: 1px solid rgba(200, 155, 60, 0.2); padding-bottom: 0.8rem; }
 
-.pinball-container, .ladder-container {
-  background: #000; border: 2px solid #1e2328; width: 100%; height: 350px;
-  position: relative; overflow: hidden; margin-bottom: 1.5rem; border-radius: 4px;
-}
-.roulette-pointer {
-  position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
-  width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent;
-  border-top: 30px solid var(--lol-gold); z-index: 10;
-}
-
-/* Team Gap VS UI */
-.vs-display {
-  display: flex; align-items: center; justify-content: space-between; margin-top: 2rem;
-  padding: 2rem; background: rgba(0,0,0,0.4); border: 1px solid var(--lol-card-border);
-}
-.team-side { flex: 1; text-align: center; }
-.team-side ul { list-style: none; }
-.team-side li { font-size: 1.2rem; margin: 0.5rem 0; font-weight: bold; }
-.gap-indicator {
-  font-family: 'Beaufort for LoL', serif; font-size: 2.5rem; color: var(--lol-gold);
-  padding: 0 2rem; text-shadow: 0 0 10px var(--lol-gold);
-}
-
-/* Role Selector */
 .role-selector { display: flex; justify-content: center; gap: 1.5rem; margin-bottom: 4rem; flex-wrap: wrap; }
 .role-btn {
   background: rgba(1, 10, 19, 0.9); border: 1px solid var(--lol-gold); cursor: pointer;
   padding: 1rem 2rem; min-width: 120px; transition: var(--transition); border-radius: 2px;
 }
 .role-btn span { color: var(--lol-gold); font-weight: bold; text-transform: uppercase; font-size: 1.1rem; letter-spacing: 2px; }
-.role-btn:hover { background-color: rgba(200, 155, 60, 0.15); box-shadow: var(--gold-glow); }
 .role-btn.active { background-color: rgba(200, 155, 60, 0.25); border-width: 2px; }
 
-/* Champion Card */
 .champion-card {
   background: var(--lol-card-bg); border: 1px solid var(--lol-card-border); display: flex;
   gap: 3rem; padding: 3rem; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8); max-width: 1000px; margin: 0 auto;
 }
-#champ-splash { width: 450px; height: auto; border: 2px solid var(--lol-card-border); border-radius: 2px; }
+#champ-splash { width: 450px; height: auto; border: 2px solid var(--lol-card-border); }
 .champion-info h2 { font-family: 'Beaufort for LoL', serif; font-size: 3.5rem; color: var(--lol-gold); }
 
 .primary-btn {
@@ -199,23 +144,16 @@ body.has-focus .focused-overlay { display: block; }
   font-weight: bold; text-transform: uppercase; cursor: pointer; transition: var(--transition);
   font-size: 1.1rem; letter-spacing: 2px; font-family: 'Beaufort for LoL', serif;
 }
-.primary-btn:hover { background: var(--lol-gold-hover); transform: scale(1.05); }
 
 #loading {
   position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 10, 19, 0.9);
   display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10000;
 }
-.spinner {
-  width: 60px; height: 60px; border: 4px solid rgba(200, 155, 60, 0.1);
-  border-top-color: var(--lol-gold); border-radius: 50%; animation: spin 1s linear infinite;
-}
-
-@keyframes spin { to { transform: rotate(360deg); } }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+.spinner { width: 60px; height: 60px; border: 4px solid rgba(200, 155, 60, 0.1); border-top-color: var(--lol-gold); border-radius: 50%; animation: spin 1s linear infinite; }
 
 .hidden { display: none !important; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes scaleUp { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-@media (max-width: 1000px) {
-  .champion-card { flex-direction: column; align-items: center; }
-  #champ-splash { width: 100%; }
-}
+@media (max-width: 1000px) { .champion-card { flex-direction: column; align-items: center; } #champ-splash { width: 100%; } }

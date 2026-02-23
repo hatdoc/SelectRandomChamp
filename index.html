@@ -91,16 +91,18 @@
       <!-- Streamer Toolkit Content -->
       <div id="streamer-toolkit" class="tab-content">
         <div class="toolkit-grid">
-          <!-- Roulette Randomizer -->
+          <!-- Scrolling Roulette -->
           <div class="tool-card" id="pinball-tool">
-            <h2 data-i18n="pinball-title">Roulette Randomizer</h2>
-            <div class="pinball-container" id="pinball-board">
-              <canvas id="pinball-canvas"></canvas>
-              <div class="roulette-pointer"></div>
+            <h2 data-i18n="pinball-title">Bouncing Roulette</h2>
+            <div class="roulette-scroll-container" id="pinball-board">
+              <div class="roulette-window">
+                <div class="roulette-tape" id="roulette-tape"></div>
+                <div class="roulette-marker"></div>
+              </div>
             </div>
             <div class="tool-controls">
               <input type="text" id="pinball-input" placeholder="Options (comma separated)" data-i18n-placeholder="options-placeholder">
-              <button id="pinball-start" class="primary-btn" data-i18n="start-btn">Spin Wheel</button>
+              <button id="pinball-start" class="primary-btn" data-i18n="start-btn">Spin Roulette</button>
             </div>
           </div>
 
@@ -125,19 +127,16 @@
             </div>
           </div>
 
-          <!-- Team Splitter (LoL Gap Style) -->
+          <!-- Team Pair Splitter (Vertical LoL Gap) -->
           <div class="tool-card" id="team-tool">
-            <h2 data-i18n="team-title">Team Gap Splitter</h2>
+            <h2 data-i18n="team-title">Vertical Team Gap</h2>
             <div class="team-container">
-              <div class="input-group">
-                <label data-i18n="team-names-label">Players (One per line):</label>
-                <textarea id="team-input" placeholder="Enter names..."></textarea>
+              <div class="team-pair-list" id="team-pair-list">
+                <!-- Pairs will be generated here -->
               </div>
-              <button id="team-start" class="primary-btn" data-i18n="split-btn">Split Teams</button>
-              <div id="team-results" class="vs-display">
-                <div class="team-side team-a"></div>
-                <div class="gap-indicator">VS</div>
-                <div class="team-side team-b"></div>
+              <div class="team-actions">
+                <button id="add-pair-btn" class="secondary-btn">+ Add Pair</button>
+                <button id="team-start" class="primary-btn" data-i18n="split-btn">Calculate Gap</button>
               </div>
             </div>
           </div>
