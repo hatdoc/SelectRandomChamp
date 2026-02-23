@@ -80,7 +80,7 @@ function setupEventListeners() {
 function showBigResult(title, text) {
   const el = document.getElementById('big-result-overlay');
   document.getElementById('result-title').textContent = title;
-  document.getElementById('result-text').textContent = text;
+  document.getElementById('result-text').innerText = text;
   el.classList.remove('hidden');
 }
 window.closeResult = () => {
@@ -207,22 +207,20 @@ function initLadder() {
     
     const spacing = canvas.width / (count + 1), lines = [];
     for (let i = 0; i < count - 1; i++) { 
-      const lineCount = 15; // Increased complexity (more lines)
-      for (let j = 0; j < lineCount; j++) lines.push({ from: i, to: i + 1, y: 70 + Math.random() * 270 }); 
+      for (let j = 0; j < 15; j++) lines.push({ from: i, to: i + 1, y: 70 + Math.random() * 270 }); 
     }
     const sortedLines = [...lines].sort((a,b) => a.y - b.y);
     
     let pathIdx = 0;
     function revealPath() {
       if (isSkipped) {
-        drawAllPaths(players, results, count, spacing, lines, sortedLines);
+        drawAllPaths();
         return;
       }
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       drawStatic(players, results, count, spacing, lines, pathIdx);
 
-      // Animate current marker
       let currX = pathIdx, currY = 60;
       let pathPoints = [{x: spacing * (currX + 1), y: currY}];
       sortedLines.forEach(l => {
@@ -241,18 +239,13 @@ function initLadder() {
             if (isSkipped) return revealPath();
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             drawStatic(players, results, count, spacing, lines, pathIdx);
-            
-            // Draw already completed current path
             ctx.strokeStyle = `hsl(${pathIdx * 360 / count}, 80%, 50%)`; ctx.lineWidth = 5;
             ctx.beginPath(); ctx.moveTo(pathPoints[0].x, pathPoints[0].y);
             for(let i=0; i<=pointIdx; i++) ctx.lineTo(pathPoints[i].x, pathPoints[i].y);
             const midX = start.x + (end.x - start.x) * progress, midY = start.y + (end.y - start.y) * progress;
             ctx.lineTo(midX, midY); ctx.stroke();
-            
-            // Draw marker ball
             ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(midX, midY, 6, 0, Math.PI*2); ctx.fill();
-
-            progress += 0.06; // Slower speed (was 0.15)
+            progress += 0.06;
             if (progress < 1) requestAnimationFrame(drawMove);
             else { pointIdx++; animateMarker(); }
           }
@@ -275,7 +268,6 @@ function initLadder() {
         else ctx.fillText("???", x, 370);
       }
       lines.forEach(l => { ctx.beginPath(); ctx.moveTo(spacing*(l.from+1), l.y); ctx.lineTo(spacing*(l.to+1), l.y); ctx.stroke(); });
-      // Draw already completed FULL paths
       for(let p = 0; p < currentRevealIdx; p++) {
         let cx = p; ctx.strokeStyle = `hsl(${p * 360 / count}, 80%, 50%)`; ctx.lineWidth = 3;
         ctx.beginPath(); ctx.moveTo(spacing*(cx+1), 60);
@@ -308,7 +300,18 @@ function initLadder() {
       finish();
     }
 
-    function finish() { isRunning = false; skipBtn.classList.add('hidden'); setTimeout(() => showBigResult("LADDER FINISHED", "ALL RESULTS REVEALED!"), 500); }
+    function finish() { 
+      isRunning = false; skipBtn.classList.add('hidden'); 
+      const summary = players.map((p, i) => {
+        let cx = i;
+        sortedLines.forEach(l => {
+          if (l.from === cx) cx = l.to;
+          else if (l.to === cx) cx = l.from;
+        });
+        return `${p} gets ${results[cx]}`;
+      }).join('\n');
+      setTimeout(() => showBigResult("LADDER RESULTS", summary), 500); 
+    }
 
     revealPath();
   });
