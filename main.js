@@ -129,15 +129,27 @@ function initPinball() {
     if (!opts.length) return;
     focusTool('pinball-tool'); setup(); isRunning = true;
     balls = [];
+    
+    // Create balls and shuffle them to randomize release order for fair "Last Wins"
+    const tempBalls = [];
     opts.forEach((opt, i) => {
       for(let j=0; j<30; j++) {
-        balls.push({
-          x: canvas.width / 2 + (Math.random() - 0.5) * 80, y: -20 - (j * 15) - (i * 100), r: 8, label: opt,
-          vx: (Math.random() - 0.5) * 3, vy: 1, finished: false,
-          color: `hsl(${(i * 360 / opts.length)}, 70%, 60%)`
-        });
+        tempBalls.push({ label: opt, color: `hsl(${(i * 360 / opts.length)}, 70%, 60%)` });
       }
     });
+    
+    // Shuffle tempBalls
+    for (let i = tempBalls.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [tempBalls[i], tempBalls[j]] = [tempBalls[j], tempBalls[i]];
+    }
+
+    balls = tempBalls.map((b, i) => ({
+      x: canvas.width / 2 + (Math.random() - 0.5) * 80, 
+      y: -20 - (i * 15), // Randomized Y based on shuffled order
+      r: 8, label: b.label, color: b.color,
+      vx: (Math.random() - 0.5) * 3, vy: 1, finished: false
+    }));
 
     function loop() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -192,7 +204,7 @@ function initLadder() {
     for(let i=1; i<=2; i++) {
       const x = spacing * i; ctx.beginPath(); ctx.moveTo(x, 50); ctx.lineTo(x, 350); ctx.stroke();
       ctx.fillStyle = '#f0e6d2'; ctx.font = 'bold 14px Spiegel'; ctx.textAlign = 'center';
-      ctx.fillText("Player " + i, x, 40); ctx.fillText("???", x, 370);
+      ctx.fillText("Player " + i, x, 40); ctx.fillText("Result " + i, x, 370);
     }
   }
 
@@ -212,31 +224,38 @@ function initLadder() {
     const sortedLines = [...lines].sort((a,b) => a.y - b.y);
     
     let pathIdx = 0;
-    function revealPath() {
-      if (isSkipped) {
-        drawAllPaths();
-        return;
-      }
+    function finish() { 
+      isRunning = false; skipBtn.classList.add('hidden'); 
+      const summary = players.map((p, i) => {
+        let cx = i;
+        sortedLines.forEach(l => {
+          if (l.from === cx) cx = l.to;
+          else if (l.to === cx) cx = l.from;
+        });
+        return `${p}: ${results[cx]}`;
+      }).join('\n');
+      showBigResult("LADDER RESULTS", summary); 
+    }
 
+    function revealPath() {
+      if (isSkipped) { drawAllPaths(); return; }
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       drawStatic(players, results, count, spacing, lines, pathIdx);
-
       let currX = pathIdx, currY = 60;
       let pathPoints = [{x: spacing * (currX + 1), y: currY}];
       sortedLines.forEach(l => {
-        if (l.from === currX) { pathPoints.push({x: spacing * (currX + 1), y: l.y}); currX = l.to; pathPoints.push({x: spacing * (currX + 1), y: l.y}); }
-        else if (l.to === currX) { pathPoints.push({x: spacing * (currX + 1), y: l.y}); currX = l.from; pathPoints.push({x: spacing * (currX + 1), y: l.y}); }
+        if (l.from === currX) { pathPoints.push({x: spacing*(currX+1), y: l.y}); currX = l.to; pathPoints.push({x: spacing*(currX+1), y: l.y}); }
+        else if (l.to === currX) { pathPoints.push({x: spacing*(currX+1), y: l.y}); currX = l.from; pathPoints.push({x: spacing*(currX+1), y: l.y}); }
       });
       pathPoints.push({x: spacing * (currX + 1), y: 350});
-
       let pointIdx = 0;
       function animateMarker() {
-        if (isSkipped) return revealPath();
+        if (isSkipped) return drawAllPaths();
         if (pointIdx < pathPoints.length - 1) {
           const start = pathPoints[pointIdx], end = pathPoints[pointIdx+1];
           let progress = 0;
           function drawMove() {
-            if (isSkipped) return revealPath();
+            if (isSkipped) return drawAllPaths();
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             drawStatic(players, results, count, spacing, lines, pathIdx);
             ctx.strokeStyle = `hsl(${pathIdx * 360 / count}, 80%, 50%)`; ctx.lineWidth = 5;
@@ -245,9 +264,7 @@ function initLadder() {
             const midX = start.x + (end.x - start.x) * progress, midY = start.y + (end.y - start.y) * progress;
             ctx.lineTo(midX, midY); ctx.stroke();
             ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(midX, midY, 6, 0, Math.PI*2); ctx.fill();
-            progress += 0.06;
-            if (progress < 1) requestAnimationFrame(drawMove);
-            else { pointIdx++; animateMarker(); }
+            progress += 0.06; if (progress < 1) requestAnimationFrame(drawMove); else { pointIdx++; animateMarker(); }
           }
           drawMove();
         } else {
@@ -264,13 +281,11 @@ function initLadder() {
         const x = spacing * (i + 1); ctx.beginPath(); ctx.moveTo(x, 60); ctx.lineTo(x, 350); ctx.stroke();
         ctx.fillStyle = '#f0e6d2'; ctx.font = 'bold 14px Spiegel'; ctx.textAlign = 'center';
         ctx.fillText(players[i], x, 50);
-        if (i < currentRevealIdx) ctx.fillText(results[i], x, 370);
-        else ctx.fillText("???", x, 370);
+        ctx.fillText(results[i], x, 370); // Always visible
       }
       lines.forEach(l => { ctx.beginPath(); ctx.moveTo(spacing*(l.from+1), l.y); ctx.lineTo(spacing*(l.to+1), l.y); ctx.stroke(); });
       for(let p = 0; p < currentRevealIdx; p++) {
-        let cx = p; ctx.strokeStyle = `hsl(${p * 360 / count}, 80%, 50%)`; ctx.lineWidth = 3;
-        ctx.beginPath(); ctx.moveTo(spacing*(cx+1), 60);
+        let cx = p; ctx.strokeStyle = `hsl(${p * 360 / count}, 80%, 50%)`; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(spacing*(cx+1), 60);
         sortedLines.forEach(l => {
           if (l.from === cx) { ctx.lineTo(spacing*(cx+1), l.y); cx = l.to; ctx.lineTo(spacing*(cx+1), l.y); }
           else if (l.to === cx) { ctx.lineTo(spacing*(cx+1), l.y); cx = l.from; ctx.lineTo(spacing*(cx+1), l.y); }
@@ -280,8 +295,7 @@ function initLadder() {
     }
 
     function drawAllPaths() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.strokeStyle = '#c89b3c'; ctx.lineWidth = 2;
+      ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.strokeStyle = '#c89b3c'; ctx.lineWidth = 2;
       for (let i = 0; i < count; i++) {
         const x = spacing * (i + 1); ctx.beginPath(); ctx.moveTo(x, 60); ctx.lineTo(x, 350); ctx.stroke();
         ctx.fillStyle = '#f0e6d2'; ctx.font = 'bold 14px Spiegel'; ctx.textAlign = 'center';
@@ -289,8 +303,7 @@ function initLadder() {
       }
       lines.forEach(l => { ctx.beginPath(); ctx.moveTo(spacing*(l.from+1), l.y); ctx.lineTo(spacing*(l.to+1), l.y); ctx.stroke(); });
       for(let p = 0; p < count; p++) {
-        let cx = p; ctx.strokeStyle = `hsl(${p * 360 / count}, 80%, 50%)`; ctx.lineWidth = 3;
-        ctx.beginPath(); ctx.moveTo(spacing*(cx+1), 60);
+        let cx = p; ctx.strokeStyle = `hsl(${p * 360 / count}, 80%, 50%)`; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(spacing*(cx+1), 60);
         sortedLines.forEach(l => {
           if (l.from === cx) { ctx.lineTo(spacing*(cx+1), l.y); cx = l.to; ctx.lineTo(spacing*(cx+1), l.y); }
           else if (l.to === cx) { ctx.lineTo(spacing*(cx+1), l.y); cx = l.from; ctx.lineTo(spacing*(cx+1), l.y); }
@@ -299,23 +312,8 @@ function initLadder() {
       }
       finish();
     }
-
-    function finish() { 
-      isRunning = false; skipBtn.classList.add('hidden'); 
-      const summary = players.map((p, i) => {
-        let cx = i;
-        sortedLines.forEach(l => {
-          if (l.from === cx) cx = l.to;
-          else if (l.to === cx) cx = l.from;
-        });
-        return `${p} gets ${results[cx]}`;
-      }).join('\n');
-      setTimeout(() => showBigResult("LADDER RESULTS", summary), 500); 
-    }
-
     revealPath();
   });
-
   skipBtn.addEventListener('click', () => isSkipped = true);
   window.addEventListener('resize', drawInitial); setTimeout(drawInitial, 500);
 }
