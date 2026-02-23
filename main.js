@@ -31,7 +31,8 @@ const TRANSLATIONS = {
     'mission-btn': 'New Mission',
     'bracket-btn': 'Generate Bracket',
     'options-placeholder': 'Option 1, Option 2, Option 3...',
-    'ladder-placeholder': 'Names on top, results on bottom (comma separated)',
+    'ladder-players': 'Players (Comma separated)',
+    'ladder-results': 'Results (Comma separated)',
     'team-placeholder': 'Enter names (one per line)',
     'bracket-placeholder': 'Enter 4 or 8 names (one per line)',
     'teams-label': 'Teams:',
@@ -47,8 +48,6 @@ const TRANSLATIONS = {
     'pinball-mode-first': 'First Fall Wins',
     'pinball-mode-last': 'Last Fall Wins',
     'pinball-balls': 'Balls:',
-    'ladder-players': 'Players (Comma separated):',
-    'ladder-results': 'Results (Comma separated):',
     'team-names-label': 'Enter Names (One per line):'
   },
   'ko_KR': {
@@ -74,7 +73,8 @@ const TRANSLATIONS = {
     'mission-btn': '새 미션 받기',
     'bracket-btn': '대진표 생성',
     'options-placeholder': '옵션 1, 옵션 2, 옵션 3...',
-    'ladder-placeholder': '사람 이름들 / 결과들 (쉼표로 구분)',
+    'ladder-players': '플레이어 (쉼표로 구분)',
+    'ladder-results': '결과 (쉼표로 구분)',
     'team-placeholder': '이름을 한 줄에 하나씩 입력하세요',
     'bracket-placeholder': '참가자 4명 또는 8명 입력 (한 줄에 하나씩)',
     'teams-label': '팀 개수:',
@@ -90,13 +90,10 @@ const TRANSLATIONS = {
     'pinball-mode-first': '처음 떨어진게 당첨',
     'pinball-mode-last': '가장 나중에 떨어진게 당첨',
     'pinball-balls': '공 개수:',
-    'ladder-players': '플레이어 (쉼표로 구분):',
-    'ladder-results': '결과 (쉼표로 구분):',
     'team-names-label': '이름 입력 (한 줄에 한 명씩):'
   }
 };
 
-// State management
 let currentState = {
   version: null,
   locale: CONFIG.DEFAULT_LOCALE,
@@ -132,9 +129,6 @@ const MISSIONS = {
   ]
 };
 
-/**
- * Initialize the application
- */
 async function init() {
   setLocale();
   applyTheme();
@@ -150,9 +144,11 @@ async function init() {
     initTeamSplitter();
     initMissionGenerator();
     initBracketGenerator();
-    showLoading(false);
+    initFocusMode();
   } catch (error) {
     console.error('Failed to initialize app:', error);
+  } finally {
+    showLoading(false);
   }
 }
 
@@ -207,7 +203,6 @@ async function fetchChampions() {
 function setupEventListeners() {
   document.getElementById('theme-toggle')?.addEventListener('change', toggleTheme);
 
-  // Tabs
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -217,7 +212,6 @@ function setupEventListeners() {
     });
   });
 
-  // Roles
   document.querySelectorAll('.role-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
@@ -226,7 +220,6 @@ function setupEventListeners() {
     });
   });
 
-  // Reroll button - ensure it works even if dynamically shown
   document.addEventListener('click', (e) => {
     if (e.target && e.target.id === 'reroll-btn') {
       if (currentState.selectedRole) pickRandomChampion(currentState.selectedRole);
@@ -234,7 +227,25 @@ function setupEventListeners() {
   });
 }
 
-// Improved Pinball
+function initFocusMode() {
+  const overlay = document.querySelector('.focused-overlay');
+  document.querySelectorAll('.tool-card').forEach(card => {
+    card.addEventListener('click', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'BUTTON' || e.target.tagName === 'SELECT') return;
+      if (card.classList.contains('focused')) return;
+      
+      document.querySelectorAll('.tool-card').forEach(c => c.classList.remove('focused'));
+      card.classList.add('focused');
+      document.body.classList.add('has-focus');
+    });
+  });
+
+  overlay.addEventListener('click', () => {
+    document.querySelectorAll('.tool-card').forEach(c => c.classList.remove('focused'));
+    document.body.classList.remove('has-focus');
+  });
+}
+
 function initPinball() {
   const canvas = document.getElementById('pinball-canvas');
   if (!canvas) return;
@@ -245,147 +256,90 @@ function initPinball() {
   const ballCountInput = document.getElementById('pinball-ball-count');
   
   document.querySelectorAll('.preset-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      ballCountInput.value = btn.dataset.count;
-    });
+    btn.addEventListener('click', () => { ballCountInput.value = btn.dataset.count; });
   });
 
-  let animationId;
-  let balls = [];
-  let pins = [];
-  let buckets = [];
-  let isRunning = false;
-  let finishedBalls = [];
+  let balls = [], pins = [], buckets = [], isRunning = false, finishedBalls = [];
 
   function setupBoard() {
     canvas.width = canvas.parentElement.clientWidth;
-    canvas.height = 300;
+    canvas.height = 350;
     pins = [];
-    const rows = 9;
-    const spacingX = canvas.width / 11;
-    const spacingY = 25;
-    
+    const rows = 10, spacingX = canvas.width / 12, spacingY = 28;
     for (let r = 0; r < rows; r++) {
       const offset = (r % 2) * (spacingX / 2);
-      for (let c = 0; c < 12; c++) {
-        pins.push({ x: c * spacingX + offset, y: 40 + r * spacingY });
-      }
+      for (let c = 0; c < 13; c++) pins.push({ x: c * spacingX + offset, y: 50 + r * spacingY });
     }
   }
 
-  function start(options) {
+  function start() {
     if (isRunning) return;
-    isRunning = true;
     setupBoard();
-    finishedBalls = [];
+    const opts = (input.value || "1, 2, 3, 4, 5").split(',').map(o => o.trim()).filter(o => o);
+    if (opts.length === 0) return;
     
-    const opts = options.split(',').map(o => o.trim()).filter(o => o);
-    if (opts.length === 0) { isRunning = false; return; }
-
-    buckets = opts.map((opt, i) => ({
-      text: opt,
-      x: (i * canvas.width) / opts.length,
-      width: canvas.width / opts.length
-    }));
-
+    buckets = opts.map((opt, i) => ({ text: opt, x: (i * canvas.width) / opts.length, width: canvas.width / opts.length }));
     const count = parseInt(ballCountInput.value) || 1;
-    balls = [];
-    for (let i = 0; i < count; i++) {
-      balls.push({
-        x: canvas.width / 2 + (Math.random() - 0.5) * 40,
-        y: -10 - (i * 10), // Staggered entry
-        vx: (Math.random() - 0.5) * 4,
-        vy: 2 + Math.random() * 2,
-        radius: 6,
-        finished: false,
-        color: `hsl(${Math.random() * 360}, 70%, 60%)`
-      });
-    }
-
+    balls = Array.from({ length: count }, (_, i) => ({
+      x: canvas.width / 2 + (Math.random() - 0.5) * 60, y: -20 - (i * 12),
+      vx: (Math.random() - 0.5) * 4, vy: 2, radius: 6, finished: false,
+      color: `hsl(${(i * 360 / count) % 360}, 70%, 60%)`
+    }));
+    
+    finishedBalls = [];
+    isRunning = true;
     animate();
   }
 
   function animate() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#c89b3c';
+    pins.forEach(p => { ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI * 2); ctx.fill(); });
     
-    // Draw Pins
-    ctx.fillStyle = currentState.theme === 'dark' ? '#c89b3c' : '#888';
-    pins.forEach(p => {
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
-      ctx.fill();
-    });
-
-    // Draw Buckets
-    buckets.forEach((b, i) => {
-      ctx.strokeStyle = '#c89b3c';
-      ctx.strokeRect(b.x, canvas.height - 40, b.width, 40);
+    buckets.forEach(b => {
+      ctx.strokeStyle = '#c89b3c'; ctx.strokeRect(b.x, canvas.height - 45, b.width, 45);
       ctx.fillStyle = currentState.theme === 'dark' ? '#f0e6d2' : '#333';
-      ctx.font = '12px Spiegel';
-      ctx.textAlign = 'center';
-      ctx.fillText(b.text.substring(0, 10), b.x + b.width / 2, canvas.height - 15);
+      ctx.font = 'bold 12px Spiegel'; ctx.textAlign = 'center';
+      ctx.fillText(b.text.substring(0, 10), b.x + b.width / 2, canvas.height - 18);
     });
 
-    let allFinished = true;
-    const mode = modeSelect.value;
-
+    let allDone = true;
     balls.forEach(ball => {
       if (ball.finished) return;
-      allFinished = false;
-
-      // Update Physics
-      ball.vy += 0.35; // Faster Gravity
-      ball.x += ball.vx;
-      ball.y += ball.vy;
-
-      // Collisions with Pins
+      allDone = false;
+      ball.vy += 0.3; ball.x += ball.vx; ball.y += ball.vy;
+      
       pins.forEach(p => {
-        const dx = ball.x - p.x;
-        const dy = ball.y - p.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
+        const dx = ball.x - p.x, dy = ball.y - p.y, dist = Math.sqrt(dx * dx + dy * dy);
         if (dist < ball.radius + 3) {
           const angle = Math.atan2(dy, dx);
           const speed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy) * 0.85;
-          ball.vx = Math.cos(angle) * speed + (Math.random() - 0.5) * 2;
+          ball.vx = Math.cos(angle) * speed + (Math.random() - 0.5) * 2.5;
           ball.vy = Math.sin(angle) * speed;
+          ball.y += ball.vy; // Prevent sticking
         }
       });
 
-      // Walls
-      if (ball.x < ball.radius || ball.x > canvas.width - ball.radius) {
-        ball.vx *= -0.8;
-        ball.x = ball.x < ball.radius ? ball.radius : canvas.width - ball.radius;
-      }
-
-      // Draw Ball
-      ctx.fillStyle = ball.color;
-      ctx.beginPath();
-      ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Check Finish
-      if (ball.y > canvas.height - 20) {
+      if (ball.x < ball.radius || ball.x > canvas.width - ball.radius) { ball.vx *= -0.7; ball.x = ball.x < ball.radius ? ball.radius : canvas.width - ball.radius; }
+      
+      ctx.fillStyle = ball.color; ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2); ctx.fill();
+      
+      if (ball.y > canvas.height - 25) {
         ball.finished = true;
-        const winnerBucket = buckets.find(b => ball.x >= b.x && ball.x <= b.x + b.width);
-        finishedBalls.push({ ball, bucket: winnerBucket });
+        const bucket = buckets.find(b => ball.x >= b.x && ball.x <= b.x + b.width);
+        finishedBalls.push({ ball, bucket });
       }
     });
 
-    if (!allFinished) {
-      animationId = requestAnimationFrame(animate);
-    } else {
+    if (!allDone) requestAnimationFrame(animate);
+    else {
       isRunning = false;
-      let finalResult;
-      if (mode === 'first') {
-        finalResult = finishedBalls[0]?.bucket?.text;
-      } else {
-        finalResult = finishedBalls[finishedBalls.length - 1]?.bucket?.text;
-      }
-      if (finalResult) alert('Result: ' + finalResult);
+      const winner = modeSelect.value === 'first' ? finishedBalls[0] : finishedBalls[finishedBalls.length - 1];
+      if (winner) alert('WINNER: ' + winner.bucket.text);
     }
   }
 
-  startBtn.addEventListener('click', () => start(input.value || "1, 2, 3, 4, 5"));
+  startBtn.addEventListener('click', start);
   window.addEventListener('resize', setupBoard);
   setupBoard();
 }
@@ -395,153 +349,99 @@ function initLadder() {
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
   const startBtn = document.getElementById('ladder-start');
-  const playersInput = document.getElementById('ladder-players-input');
-  const resultsInput = document.getElementById('ladder-results-input');
+  const pInput = document.getElementById('ladder-players-input'), rInput = document.getElementById('ladder-results-input');
 
   function run() {
-    const players = (playersInput.value || "A, B, C, D").split(',').map(s => s.trim()).filter(s => s);
-    const results = (resultsInput.value || "1, 2, 3, 4").split(',').map(s => s.trim()).filter(s => s);
-    
+    const players = (pInput.value || "A, B, C, D").split(',').map(s => s.trim()).filter(s => s);
+    const results = (rInput.value || "1, 2, 3, 4").split(',').map(s => s.trim()).filter(s => s);
     const count = Math.min(players.length, results.length);
-    if (count < 2) return alert("Enter at least 2 players and results.");
+    if (count < 2) return;
 
-    canvas.width = canvas.parentElement.clientWidth;
-    canvas.height = 300;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    const spacing = canvas.width / (count + 1);
-    
-    // Draw Vertical Lines
-    for (let i = 0; i < count; i++) {
-      const x = spacing * (i + 1);
-      ctx.strokeStyle = '#c89b3c';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(x, 40);
-      ctx.lineTo(x, 260);
-      ctx.stroke();
-
-      ctx.fillStyle = currentState.theme === 'dark' ? '#f0e6d2' : '#333';
-      ctx.font = 'bold 14px Spiegel';
-      ctx.textAlign = 'center';
-      ctx.fillText(players[i], x, 30);
-      ctx.fillText(results[i], x, 285);
+    canvas.width = canvas.parentElement.clientWidth; canvas.height = 350;
+    const spacing = canvas.width / (count + 1), lines = [];
+    for (let i = 0; i < count - 1; i++) {
+      for (let j = 0; j < 4; j++) lines.push({ from: i, to: i + 1, y: 70 + Math.random() * 200 });
     }
 
-    // Draw Random Horizontal Bars
-    ctx.lineWidth = 2;
-    for (let i = 0; i < count - 1; i++) {
-      const x1 = spacing * (i + 1);
-      const x2 = spacing * (i + 2);
-      for (let j = 0; j < 3; j++) {
-        const y = 60 + Math.random() * 180;
-        ctx.beginPath();
-        ctx.moveTo(x1, y);
-        ctx.lineTo(x2, y);
-        ctx.stroke();
+    let progress = 0;
+    function animateLadder() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.strokeStyle = '#c89b3c'; ctx.lineWidth = 2;
+      for (let i = 0; i < count; i++) {
+        const x = spacing * (i + 1);
+        ctx.beginPath(); ctx.moveTo(x, 50); ctx.lineTo(x, 300); ctx.stroke();
+        ctx.fillStyle = '#f0e6d2'; ctx.font = 'bold 14px Spiegel'; ctx.textAlign = 'center';
+        ctx.fillText(players[i], x, 40); ctx.fillText(results[i], x, 320);
+      }
+      lines.forEach(l => {
+        ctx.beginPath(); ctx.moveTo(spacing * (l.from + 1), l.y); ctx.lineTo(spacing * (l.to + 1), l.y); ctx.stroke();
+      });
+
+      progress += 0.01;
+      if (progress < 1) requestAnimationFrame(animateLadder);
+      else {
+        // Trace paths for results
+        players.forEach((_, idx) => {
+          let currX = idx, currY = 50;
+          ctx.strokeStyle = `hsl(${idx * 360 / count}, 70%, 60%)`; ctx.lineWidth = 4;
+          ctx.beginPath(); ctx.moveTo(spacing * (currX + 1), currY);
+          const sortedLines = [...lines].sort((a, b) => a.y - b.y);
+          sortedLines.forEach(l => {
+            if (l.from === currX) { ctx.lineTo(spacing * (currX + 1), l.y); currX = l.to; ctx.lineTo(spacing * (currX + 1), l.y); }
+            else if (l.to === currX) { ctx.lineTo(spacing * (currX + 1), l.y); currX = l.from; ctx.lineTo(spacing * (currX + 1), l.y); }
+          });
+          ctx.lineTo(spacing * (currX + 1), 300); ctx.stroke();
+        });
       }
     }
+    animateLadder();
   }
-
   startBtn.addEventListener('click', run);
 }
 
 function initTeamSplitter() {
-  const startBtn = document.getElementById('team-start');
-  const input = document.getElementById('team-input');
-  const countInput = document.getElementById('team-count');
-  const resultArea = document.getElementById('team-results');
-
-  if (!startBtn) return;
-
-  startBtn.addEventListener('click', () => {
-    const names = input.value.split('\n').map(n => n.trim()).filter(n => n);
+  const btn = document.getElementById('team-start');
+  if (!btn) return;
+  btn.addEventListener('click', () => {
+    const names = document.getElementById('team-input').value.split('\n').map(n => n.trim()).filter(n => n);
+    const teamCount = parseInt(document.getElementById('team-count').value);
     if (names.length === 0) return;
-
-    const teamCount = parseInt(countInput.value);
-    const shuffled = names.sort(() => Math.random() - 0.5);
-    const teams = Array.from({ length: teamCount }, () => []);
-
-    shuffled.forEach((name, i) => {
-      teams[i % teamCount].push(name);
-    });
-
-    resultArea.innerHTML = '';
-    teams.forEach((team, i) => {
-      const box = document.createElement('div');
-      box.className = 'team-box';
-      box.innerHTML = `<h3>Team ${i + 1}</h3><ul>${team.map(n => `<li>${n}</li>`).join('')}</ul>`;
-      resultArea.appendChild(box);
+    const teams = Array.from({ length: teamCount }, () => []), shuffled = names.sort(() => Math.random() - 0.5);
+    shuffled.forEach((n, i) => teams[i % teamCount].push(n));
+    const res = document.getElementById('team-results'); res.innerHTML = '';
+    teams.forEach((t, i) => {
+      const b = document.createElement('div'); b.className = 'team-box';
+      b.innerHTML = `<h3>Team ${i + 1}</h3><ul>${t.map(n => `<li>${n}</li>`).join('')}</ul>`;
+      res.appendChild(b);
     });
   });
 }
 
 function initMissionGenerator() {
   const btn = document.getElementById('mission-start');
-  const display = document.getElementById('mission-display');
-  const text = document.getElementById('mission-text');
-  const icon = document.querySelector('.mission-icon');
-
   if (!btn) return;
-
   btn.addEventListener('click', () => {
-    display.classList.remove('active');
-    void display.offsetWidth; // Trigger reflow
-    display.classList.add('active');
-    
+    const card = document.getElementById('mission-display'), txt = document.getElementById('mission-text');
+    card.classList.remove('active'); void card.offsetWidth; card.classList.add('active');
     const missions = MISSIONS[currentState.locale] || MISSIONS['en_US'];
-    const randomMission = missions[Math.floor(Math.random() * missions.length)];
-    
-    text.textContent = randomMission;
-    icon.textContent = "!";
+    txt.textContent = missions[Math.floor(Math.random() * missions.length)];
+    document.querySelector('.mission-icon').textContent = "!";
   });
 }
 
 function initBracketGenerator() {
   const btn = document.getElementById('bracket-start');
-  const input = document.getElementById('bracket-input');
-  const display = document.getElementById('bracket-display');
-
   if (!btn) return;
-
   btn.addEventListener('click', () => {
-    const names = input.value.split('\n').map(n => n.trim()).filter(n => n);
-    if (names.length !== 4 && names.length !== 8) {
-      alert("Please enter exactly 4 or 8 names for a balanced bracket.");
-      return;
-    }
-
-    const shuffled = names.sort(() => Math.random() - 0.5);
-    let html = '';
-    
-    // Round 1
-    html += '<div class="bracket-round">';
-    for (let i = 0; i < shuffled.length; i += 2) {
-      html += `
-        <div class="matchup">
-          <span class="player-name">${shuffled[i]}</span>
-          <span class="player-name">${shuffled[i+1]}</span>
-        </div>`;
-    }
+    const names = document.getElementById('bracket-input').value.split('\n').map(n => n.trim()).filter(n => n);
+    if (names.length !== 4 && names.length !== 8) return alert("Enter 4 or 8 names.");
+    const shuffled = names.sort(() => Math.random() - 0.5), display = document.getElementById('bracket-display');
+    let html = '<div class="bracket-round">';
+    for (let i = 0; i < shuffled.length; i += 2) html += `<div class="matchup"><span class="player-name">${shuffled[i]}</span><span class="player-name">${shuffled[i+1]}</span></div>`;
+    html += '</div><div class="bracket-round">';
+    for (let i = 0; i < shuffled.length / 2; i += 2) html += `<div class="matchup"><span class="player-name">Winner ${i+1}</span><span class="player-name">Winner ${i+2}</span></div>`;
     html += '</div>';
-
-    // Round 2 (Semi/Final)
-    html += '<div class="bracket-round">';
-    const nextRoundCount = shuffled.length / 2;
-    for (let i = 0; i < nextRoundCount; i += 2) {
-      html += `
-        <div class="matchup">
-          <span class="player-name">Winner ${i+1}</span>
-          <span class="player-name">Winner ${i+2}</span>
-        </div>`;
-    }
-    html += '</div>';
-
-    // Final if 8 players
-    if (shuffled.length === 8) {
-      html += '<div class="bracket-round"><div class="matchup"><span class="player-name">Champion</span></div></div>';
-    }
-
+    if (shuffled.length === 8) html += '<div class="bracket-round"><div class="matchup"><span class="player-name">Champion</span></div></div>';
     display.innerHTML = html;
   });
 }
@@ -555,50 +455,23 @@ const ROLE_OVERRIDES = {
 };
 
 async function pickRandomChampion(role) {
-  currentState.selectedRole = role;
-  showLoading(true);
+  currentState.selectedRole = role; showLoading(true);
   let filtered = currentState.champions.filter(c => ROLE_OVERRIDES[role]?.includes(c.id));
   if (filtered.length === 0) filtered = currentState.champions;
-  const randomChamp = filtered[Math.floor(Math.random() * filtered.length)];
-  await displayChampion(randomChamp.id);
+  await displayChampion(filtered[Math.floor(Math.random() * filtered.length)].id);
 }
 
-async function displayChampion(championId) {
+async function displayChampion(id) {
   try {
-    const url = `${CONFIG.DATA_DRAGON_BASE}/${currentState.version}/data/${currentState.locale}/champion/${championId}.json`;
-    const response = await fetch(url);
-    const data = await response.json();
-    const champion = data.data[championId];
-
-    document.getElementById('champ-name').textContent = champion.name;
-    document.getElementById('champ-title').textContent = champion.title;
-    // Fix splash URL: Data Dragon splash images are in /cdn/img/champion/splash/
-    document.getElementById('champ-splash').src = `https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${championId}_0.jpg`;
-
-    const tipsList = document.getElementById('champ-tips-list');
-    tipsList.innerHTML = '';
-    const tips = champion.allytips.length > 0 ? champion.allytips : [champion.blurb];
-    tips.slice(0, 3).forEach(tip => {
-      const li = document.createElement('li');
-      li.textContent = tip;
-      tipsList.appendChild(li);
-    });
-
-    document.getElementById('result-area').classList.remove('hidden');
-    document.getElementById('result-area').scrollIntoView({ behavior: 'smooth' });
-    showLoading(false);
-  } catch (error) {
-    console.error("Error displaying champion:", error);
-    showLoading(false);
-  }
+    const res = await fetch(`${CONFIG.DATA_DRAGON_BASE}/${currentState.version}/data/${currentState.locale}/champion/${id}.json`), data = await res.json(), champ = data.data[id];
+    document.getElementById('champ-name').textContent = champ.name; document.getElementById('champ-title').textContent = champ.title;
+    document.getElementById('champ-splash').src = `https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${id}_0.jpg`;
+    const list = document.getElementById('champ-tips-list'); list.innerHTML = '';
+    (champ.allytips.length ? champ.allytips : [champ.blurb]).slice(0, 3).forEach(t => { const li = document.createElement('li'); li.textContent = t; list.appendChild(li); });
+    document.getElementById('result-area').classList.remove('hidden'); document.getElementById('result-area').scrollIntoView({ behavior: 'smooth' });
+  } finally { showLoading(false); }
 }
 
-function showLoading(isLoading) {
-  const loadingEl = document.getElementById('loading');
-  if (loadingEl) {
-    if (isLoading) loadingEl.classList.remove('hidden');
-    else loadingEl.classList.add('hidden');
-  }
-}
+function showLoading(show) { const el = document.getElementById('loading'); if (el) el.classList.toggle('hidden', !show); }
 
 init();
