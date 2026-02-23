@@ -1,1 +1,284 @@
-/* Add styles here */
+:root {
+  --lol-gold: #c89b3c;
+  --lol-gold-hover: #f0e6d2;
+  --lol-dark-blue: #091428;
+  --lol-blue-grey: #a09b8c;
+  --lol-text: #f0e6d2;
+  --lol-dark-bg: #010a13;
+  --lol-card-bg: rgba(9, 20, 40, 0.85);
+  --lol-card-border: #1e2328;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body.lol-theme {
+  background: radial-gradient(circle, var(--lol-dark-blue) 0%, var(--lol-dark-bg) 100%);
+  color: var(--lol-text);
+  font-family: 'Spiegel', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem 1rem;
+}
+
+#app {
+  width: 100%;
+  max-width: 900px;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+header h1 {
+  font-family: 'Beaufort for LoL', serif;
+  font-size: 3rem;
+  color: var(--lol-gold);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 0.5rem;
+}
+
+header p {
+  color: var(--lol-blue-grey);
+  font-size: 1.2rem;
+}
+
+.role-selector {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+  flex-wrap: wrap;
+}
+
+.role-btn {
+  background: none;
+  border: 2px solid var(--lol-gold);
+  cursor: pointer;
+  padding: 1.5rem;
+  width: 140px;
+  height: 140px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  background-color: rgba(200, 155, 60, 0.05);
+  position: relative;
+  overflow: hidden;
+}
+
+.role-btn img {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 1rem;
+  filter: brightness(0.8);
+  transition: filter 0.3s;
+}
+
+.role-btn span {
+  color: var(--lol-gold);
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  letter-spacing: 1px;
+}
+
+.role-btn:hover {
+  background-color: rgba(200, 155, 60, 0.2);
+  border-color: var(--lol-gold-hover);
+  transform: translateY(-5px);
+}
+
+.role-btn:hover img {
+  filter: brightness(1.2) drop-shadow(0 0 10px var(--lol-gold));
+}
+
+.role-btn.active {
+  background-color: rgba(200, 155, 60, 0.3);
+  border-color: var(--lol-gold-hover);
+  box-shadow: 0 0 20px rgba(200, 155, 60, 0.4);
+}
+
+/* Champion Result Display */
+#result-area {
+  margin-top: 2rem;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.champion-card {
+  background: var(--lol-card-bg);
+  border: 2px solid var(--lol-card-border);
+  border-image: linear-gradient(to bottom, var(--lol-gold), var(--lol-card-border)) 1;
+  display: flex;
+  gap: 2rem;
+  padding: 2rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.champion-image-container {
+  flex-shrink: 0;
+}
+
+#champ-splash {
+  width: 300px;
+  height: auto;
+  border: 1px solid var(--lol-gold);
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.8);
+}
+
+.champion-info {
+  flex-grow: 1;
+}
+
+.champion-info h2 {
+  font-family: 'Beaufort for LoL', serif;
+  font-size: 2.5rem;
+  color: var(--lol-gold);
+  margin-bottom: 0.2rem;
+}
+
+#champ-title {
+  font-style: italic;
+  color: var(--lol-blue-grey);
+  margin-bottom: 1.5rem;
+  font-size: 1.1rem;
+  text-transform: capitalize;
+}
+
+.champ-tips {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  border-left: 3px solid var(--lol-gold);
+}
+
+.champ-tips h3 {
+  color: var(--lol-gold);
+  margin-bottom: 0.8rem;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+}
+
+#champ-tips-list {
+  list-style: none;
+}
+
+#champ-tips-list li {
+  margin-bottom: 0.8rem;
+  line-height: 1.4;
+  font-size: 0.95rem;
+  color: var(--lol-text);
+  padding-left: 1rem;
+  position: relative;
+}
+
+#champ-tips-list li::before {
+  content: '▶';
+  position: absolute;
+  left: 0;
+  color: var(--lol-gold);
+  font-size: 0.7rem;
+  top: 0.3rem;
+}
+
+.primary-btn {
+  background: var(--lol-gold);
+  color: var(--lol-dark-bg);
+  border: none;
+  padding: 1rem 2rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: 0.3s;
+  font-size: 1rem;
+  letter-spacing: 1px;
+}
+
+.primary-btn:hover {
+  background: var(--lol-gold-hover);
+  box-shadow: 0 0 15px var(--lol-gold);
+}
+
+/* Loading State */
+.hidden {
+  display: none !important;
+}
+
+#loading {
+  text-align: center;
+  padding: 3rem;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 3px solid rgba(200, 155, 60, 0.3);
+  border-top: 3px solid var(--lol-gold);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+footer {
+  margin-top: 5rem;
+  text-align: center;
+  padding: 2rem;
+  color: var(--lol-blue-grey);
+  font-size: 0.8rem;
+  max-width: 700px;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .champion-card {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  #champ-splash {
+    width: 100%;
+    max-width: 400px;
+  }
+
+  .champ-tips {
+    text-align: left;
+  }
+
+  .role-btn {
+    width: 100px;
+    height: 100px;
+    padding: 1rem;
+  }
+
+  .role-btn img {
+    width: 40px;
+    height: 40px;
+  }
+
+  .role-btn span {
+    font-size: 0.7rem;
+  }
+
+  header h1 {
+    font-size: 2rem;
+  }
+}

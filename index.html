@@ -1,14 +1,72 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hello World</title>
-  <link href='/style.css' rel='stylesheet'>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>What Champ to Play? - LoL Randomizer</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- LoL-like font -->
+  <link href="https://fonts.googleapis.com/css2?family=Beaufort+for+LoL:wght@700&family=Spiegel:wght@400;700&display=swap" rel="stylesheet">
 </head>
-<body>
-  <h1>Hello, world!</h1>
-  <button onclick="console.log('hello');">Press me</button>
-  <script defer type="text/javascript" src="/main.js"></script>
+<body class="lol-theme">
+  <div id="app">
+    <header>
+      <h1 data-i18n="title">What Champ to Play?</h1>
+      <p data-i18n="subtitle">Select your role and find your champion!</p>
+    </header>
+
+    <main>
+      <section class="role-selector">
+        <button class="role-btn" data-role="TOP">
+          <img src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-role-selector/global/default/role-icon-top.png" alt="Top">
+          <span data-i18n="role-top">Top</span>
+        </button>
+        <button class="role-btn" data-role="JUNGLE">
+          <img src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-role-selector/global/default/role-icon-jungle.png" alt="Jungle">
+          <span data-i18n="role-jungle">Jungle</span>
+        </button>
+        <button class="role-btn" data-role="MIDDLE">
+          <img src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-role-selector/global/default/role-icon-mid.png" alt="Mid">
+          <span data-i18n="role-mid">Mid</span>
+        </button>
+        <button class="role-btn" data-role="BOTTOM">
+          <img src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-role-selector/global/default/role-icon-bot.png" alt="ADC">
+          <span data-i18n="role-adc">ADC</span>
+        </button>
+        <button class="role-btn" data-role="UTILITY">
+          <img src="https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-role-selector/global/default/role-icon-support.png" alt="Support">
+          <span data-i18n="role-support">Support</span>
+        </button>
+      </section>
+
+      <section id="result-area" class="hidden">
+        <div class="champion-card">
+          <div class="champion-image-container">
+            <img id="champ-splash" src="" alt="Champion Splash">
+          </div>
+          <div class="champion-info">
+            <h2 id="champ-name">Champion Name</h2>
+            <p id="champ-title">Champion Title</p>
+            <div class="champ-tips">
+              <h3 data-i18n="tips-header">Pro Tips</h3>
+              <ul id="champ-tips-list"></ul>
+            </div>
+            <button id="reroll-btn" class="primary-btn" data-i18n="reroll-btn">Roll Again</button>
+          </div>
+        </div>
+      </section>
+
+      <div id="loading" class="hidden">
+        <div class="spinner"></div>
+        <p data-i18n="loading">Summoning champion...</p>
+      </div>
+    </main>
+
+    <footer>
+      <p data-i18n="disclaimer">WhatChampToPlay isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing League of Legends.</p>
+    </footer>
+  </div>
+
+  <script src="main.js"></script>
 </body>
 </html>
