@@ -3,80 +3,115 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>What Champ to Play? - LoL Randomizer & Streamer Toolkit</title>
+  <title>Streamer Toolkit - What Champ to Play?</title>
   <meta name="google-adsense-account" content="ca-pub-8983851567536524">
   <link rel="stylesheet" href="style.css">
-  <!-- Google AdSense -->
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8983851567536524"
-     crossorigin="anonymous"></script>
-  <!-- LoL-like font -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8983851567536524" crossorigin="anonymous"></script>
   <link href="https://fonts.googleapis.com/css2?family=Beaufort+for+LoL:wght@700&family=Spiegel:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body class="lol-theme">
   <div class="focused-overlay"></div>
-  <!-- New Large Result Overlay -->
   <div id="big-result-overlay" class="hidden">
     <div class="result-content">
       <h2 id="result-title">RESULT</h2>
-      <div id="result-text">WINNER NAME</div>
+      <div id="result-text">WINNER</div>
       <button onclick="closeResult()" class="primary-btn">CLOSE</button>
     </div>
   </div>
 
-  <div id="app">
-    <div class="top-bar">
-      <div class="premium-theme-toggle">
-        <input type="checkbox" id="theme-toggle" class="theme-checkbox">
-        <label for="theme-toggle" class="theme-label">
-          <span class="sun"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58a.996.996 0 00-1.41 0 .996.996 0 000 1.41l1.42 1.42c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L5.99 4.58zm12.02 12.02a.996.996 0 00-1.41 0 .996.996 0 000 1.41l1.42 1.42c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41l-1.42-1.42zM18.01 4.58l-1.42 1.42a.996.996 0 000 1.41c.39.39 1.02.39 1.41 0l1.42-1.42a.996.996 0 000-1.41.996.996 0 00-1.41 0zM5.99 16.59l-1.42 1.42a.996.996 0 000 1.41c.39.39 1.02.39 1.41 0l1.42-1.42a.996.996 0 000-1.41.996.996 0 00-1.41 0z"/></svg></span>
-          <span class="moon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/></svg></span>
-          <span class="ball"></span>
-        </label>
+  <div id="app-container">
+    <aside class="sidebar">
+      <div class="logo">
+        <h1 data-i18n="toolkit-title">STREAMER TOOLKIT</h1>
       </div>
-    </div>
-    <header>
-      <h1 data-i18n="title">What Champ to Play?</h1>
-      <p data-i18n="subtitle">Select your role and find your champion!</p>
-    </header>
-
-    <main>
-      <nav class="tool-tabs">
-        <button class="tab-btn active" data-tab="champion-randomizer" data-i18n="tab-randomizer">Randomizer</button>
-        <button class="tab-btn" data-tab="streamer-toolkit" data-i18n="tab-toolkit">Streamer Toolkit</button>
+      <nav class="side-nav">
+        <button class="nav-btn active" data-tab="streamer-toolkit">
+          <span class="icon">🛠️</span>
+          <span data-i18n="tab-toolkit">Tools</span>
+        </button>
+        <button class="nav-btn" data-tab="champion-randomizer">
+          <span class="icon">🎲</span>
+          <span data-i18n="tab-randomizer">Randomizer</span>
+        </button>
       </nav>
+      <div class="sidebar-footer">
+        <div class="premium-theme-toggle">
+          <input type="checkbox" id="theme-toggle" class="theme-checkbox">
+          <label for="theme-toggle" class="theme-label">
+            <span class="ball"></span>
+          </label>
+        </div>
+      </div>
+    </aside>
 
-      <!-- Champion Randomizer Content -->
-      <div id="champion-randomizer" class="tab-content active">
+    <main class="main-content">
+      <!-- Streamer Toolkit (Main) -->
+      <div id="streamer-toolkit" class="tab-content active">
+        <div class="toolkit-header">
+          <h2 data-i18n="toolkit-title">Streamer Toolkit</h2>
+          <p>Essential tools for your broadcast</p>
+        </div>
+        <div class="toolkit-grid">
+          <!-- New Ball Picker Pinball -->
+          <div class="tool-card" id="pinball-tool">
+            <h2 data-i18n="pinball-title">Ball Picker</h2>
+            <div class="pinball-machine" id="pinball-board">
+              <canvas id="pinball-canvas"></canvas>
+            </div>
+            <div class="tool-controls">
+              <input type="text" id="pinball-input" placeholder="Options (comma separated)" data-i18n-placeholder="options-placeholder">
+              <button id="pinball-start" class="primary-btn" data-i18n="start-btn">Pick a Ball</button>
+            </div>
+          </div>
+
+          <!-- Ladder Game -->
+          <div class="tool-card" id="ladder-tool">
+            <h2 data-i18n="ladder-title">Ghost Leg</h2>
+            <div class="ladder-container" id="ladder-board">
+              <canvas id="ladder-canvas"></canvas>
+            </div>
+            <div class="tool-controls">
+              <div class="ladder-inputs">
+                <input type="text" id="ladder-players-input" placeholder="Players: A, B, C...">
+                <input type="text" id="ladder-results-input" placeholder="Results: 1, 2, 3...">
+              </div>
+              <button id="ladder-start" class="primary-btn" data-i18n="start-btn">Run Ladder</button>
+            </div>
+          </div>
+
+          <!-- Team Pair Splitter -->
+          <div class="tool-card" id="team-tool">
+            <h2 data-i18n="team-title">Team Gap</h2>
+            <div class="team-container">
+              <div class="team-pair-list" id="team-pair-list"></div>
+              <div class="team-actions">
+                <button id="add-pair-btn" class="secondary-btn">+ Add Pair</button>
+                <button id="team-start" class="primary-btn" data-i18n="split-btn">Analyze</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Champion Randomizer -->
+      <div id="champion-randomizer" class="tab-content">
+        <div class="toolkit-header">
+          <h2 data-i18n="tab-randomizer">Champion Randomizer</h2>
+          <p>Find your next champion for the Rift</p>
+        </div>
         <section class="role-selector">
-          <button class="role-btn" data-role="TOP">
-            <span data-i18n="role-top">Top</span>
-          </button>
-          <button class="role-btn" data-role="JUNGLE">
-            <span data-i18n="role-jungle">Jungle</span>
-          </button>
-          <button class="role-btn" data-role="MIDDLE">
-            <span data-i18n="role-mid">Mid</span>
-          </button>
-          <button class="role-btn" data-role="BOTTOM">
-            <span data-i18n="role-adc">ADC</span>
-          </button>
-          <button class="role-btn" data-role="UTILITY">
-            <span data-i18n="role-support">Support</span>
-          </button>
+          <button class="role-btn big" data-role="TOP">TOP</button>
+          <button class="role-btn big" data-role="JUNGLE">JUNGLE</button>
+          <button class="role-btn big" data-role="MIDDLE">MID</button>
+          <button class="role-btn big" data-role="BOTTOM">ADC</button>
+          <button class="role-btn big" data-role="UTILITY">SUPPORT</button>
         </section>
 
         <section id="result-area" class="hidden">
           <div class="champion-card">
-            <div class="champion-image-container">
-              <img id="champ-splash" src="" alt="Champion Splash">
-            </div>
+            <img id="champ-splash" src="" alt="Champion Splash">
             <div class="champion-info">
               <h2 id="champ-name">Champion Name</h2>
-              <p id="champ-title">Champion Title</p>
-              <div class="champ-tips">
-                <h3 data-i18n="tips-header">Pro Tips</h3>
-                <ul id="champ-tips-list"></ul>
-              </div>
               <button id="reroll-btn" class="primary-btn" data-i18n="reroll-btn">Roll Again</button>
             </div>
           </div>
@@ -84,117 +119,9 @@
 
         <div id="loading" class="hidden">
           <div class="spinner"></div>
-          <p data-i18n="loading">Summoning champion...</p>
         </div>
-      </div>
-
-      <!-- Streamer Toolkit Content -->
-      <div id="streamer-toolkit" class="tab-content">
-        <div class="toolkit-grid">
-          <!-- Scrolling Roulette -->
-          <div class="tool-card" id="pinball-tool">
-            <h2 data-i18n="pinball-title">Bouncing Roulette</h2>
-            <div class="roulette-scroll-container" id="pinball-board">
-              <div class="roulette-window">
-                <div class="roulette-tape" id="roulette-tape"></div>
-                <div class="roulette-marker"></div>
-              </div>
-            </div>
-            <div class="tool-controls">
-              <input type="text" id="pinball-input" placeholder="Options (comma separated)" data-i18n-placeholder="options-placeholder">
-              <button id="pinball-start" class="primary-btn" data-i18n="start-btn">Spin Roulette</button>
-            </div>
-          </div>
-
-          <!-- Ladder Game -->
-          <div class="tool-card" id="ladder-tool">
-            <h2 data-i18n="ladder-title">Ghost Leg (Ladder)</h2>
-            <div class="ladder-container" id="ladder-board">
-              <canvas id="ladder-canvas"></canvas>
-            </div>
-            <div class="tool-controls">
-              <div class="ladder-inputs">
-                <div class="input-group">
-                  <label data-i18n="ladder-players">Players:</label>
-                  <input type="text" id="ladder-players-input" placeholder="A, B, C, D">
-                </div>
-                <div class="input-group">
-                  <label data-i18n="ladder-results">Results:</label>
-                  <input type="text" id="ladder-results-input" placeholder="1, 2, 3, 4">
-                </div>
-              </div>
-              <button id="ladder-start" class="primary-btn" data-i18n="start-btn">Run Ladder</button>
-            </div>
-          </div>
-
-          <!-- Team Pair Splitter (Vertical LoL Gap) -->
-          <div class="tool-card" id="team-tool">
-            <h2 data-i18n="team-title">Vertical Team Gap</h2>
-            <div class="team-container">
-              <div class="team-pair-list" id="team-pair-list">
-                <!-- Pairs will be generated here -->
-              </div>
-              <div class="team-actions">
-                <button id="add-pair-btn" class="secondary-btn">+ Add Pair</button>
-                <button id="team-start" class="primary-btn" data-i18n="split-btn">Calculate Gap</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Mission Generator -->
-          <div class="tool-card" id="mission-tool">
-            <h2 data-i18n="mission-title">LoL Challenge Mission</h2>
-            <div class="mission-container">
-              <div id="mission-display" class="mission-card">
-                <div class="mission-icon">?</div>
-                <p id="mission-text" data-i18n="mission-start-prompt">Click to get a mission!</p>
-              </div>
-              <button id="mission-start" class="primary-btn" data-i18n="mission-btn">New Mission</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Content Sections for SEO/AdSense -->
-      <section class="content-depth">
-        <div class="info-card">
-          <h2 data-i18n="about-title">About What Champ to Play?</h2>
-          <p data-i18n="about-p1">Choosing a champion in League of Legends can be a daunting task with over 160 unique characters to choose from. Whether you're a seasoned veteran or a newcomer to the Rift, our tool helps you break the analysis paralysis by suggesting a champion tailored to your preferred role.</p>
-        </div>
-
-        <div class="info-card">
-          <h2 data-i18n="how-it-works-title">How It Works</h2>
-          <p data-i18n="how-it-works-p1">Our algorithm uses real-time data from the Riot Games Data Dragon API to fetch the latest champion information, including their abilities, roles, and playstyles. By selecting a lane, we filter champions that are traditionally played in those positions, ensuring you get a pick that fits the meta.</p>
-        </div>
-
-        <div class="info-card">
-          <h2 data-i18n="tips-desc-title">Master Your Champion</h2>
-          <p data-i18n="tips-desc-p1">Each recommendation comes with pro tips and strategy guides. We don't just give you a name; we give you the "Ally Tips" directly from the developers to help you understand your power spikes, combos, and role in team fights.</p>
-        </div>
-      </section>
-
-      <!-- Responsive Ad Slot -->
-      <div class="ad-container">
-        <ins class="adsbygoogle"
-             style="display:block"
-             data-ad-client="ca-pub-8983851567536524"
-             data-ad-slot="auto"
-             data-ad-format="auto"
-             data-full-width-responsive="true"></ins>
-        <script>
-             (adsbygoogle = window.adsbygoogle || []).push({});
-        </script>
       </div>
     </main>
-
-    <footer>
-      <nav class="footer-nav">
-        <a href="index.html">Home</a> | 
-        <a href="privacy.html">Privacy Policy</a> | 
-        <a href="mailto:contact@whatchamptoplay.com">Contact Us</a>
-      </nav>
-      <p data-i18n="disclaimer">WhatChampToPlay isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing League of Legends.</p>
-    </footer>
   </div>
 
   <script src="main.js"></script>

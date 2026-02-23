@@ -6,26 +6,14 @@ const CONFIG = {
 
 const TRANSLATIONS = {
   'en_US': {
-    'title': 'What Champ to Play?', 'subtitle': 'Select your role and find your champion!',
-    'role-top': 'Top', 'role-jungle': 'Jungle', 'role-mid': 'Mid', 'role-adc': 'ADC', 'role-support': 'Support',
-    'tips-header': 'Pro Tips', 'reroll-btn': 'Roll Again', 'loading': 'Summoning champion...',
-    'tab-randomizer': 'Randomizer', 'tab-toolkit': 'Streamer Tools',
-    'pinball-title': 'Bouncing Roulette', 'ladder-title': 'Ghost Leg (Ladder)', 'team-title': 'Team Gap Splitter',
-    'mission-title': 'LoL Challenge Mission', 'start-btn': 'Start', 'split-btn': 'Calculate Gap',
-    'mission-btn': 'New Mission', 'options-placeholder': 'Option 1, Option 2, Option 3...',
-    'ladder-players': 'Players:', 'ladder-results': 'Results:', 'team-names-label': 'Enter Names:',
-    'mission-start-prompt': 'Click to get a mission!'
+    'toolkit-title': 'STREAMER TOOLKIT', 'tab-randomizer': 'Randomizer', 'tab-toolkit': 'Tools',
+    'pinball-title': 'Ball Picker', 'ladder-title': 'Ghost Leg', 'team-title': 'Team Gap',
+    'start-btn': 'Start', 'split-btn': 'Analyze', 'reroll-btn': 'Roll Again', 'options-placeholder': 'A, B, C, D...'
   },
   'ko_KR': {
-    'title': '뭐 할까?', 'subtitle': '라인을 선택하고 추천 챔피언을 확인하세요!',
-    'role-top': '탑', 'role-jungle': '정글', 'role-mid': '미드', 'role-adc': '원딜', 'role-support': '서포터',
-    'tips-header': '플레이 꿀팁', 'reroll-btn': '다시 뽑기', 'loading': '챔피언을 불러오는 중...',
-    'tab-randomizer': '챔피언 추천', 'tab-toolkit': '스트리머 툴킷',
-    'pinball-title': '통통 룰렛', 'ladder-title': '사다리 타기', 'team-title': '수직 팀 밸런스',
-    'mission-title': '롤 챌린지 미션', 'start-btn': '시작하기', 'split-btn': '밸런스 계산',
-    'mission-btn': '새 미션 받기', 'options-placeholder': '옵션 1, 옵션 2, 옵션 3...',
-    'ladder-players': '플레이어:', 'ladder-results': '결과:', 'team-names-label': '이름 입력:',
-    'mission-start-prompt': '클릭해서 미션을 확인하세요!'
+    'toolkit-title': '스트리머 툴킷', 'tab-randomizer': '챔피언 추천', 'tab-toolkit': '도구 모음',
+    'pinball-title': '공 뽑기 추첨', 'ladder-title': '사다리 타기', 'team-title': '팀 밸런스 측정',
+    'start-btn': '시작하기', 'split-btn': '밸런스 계산', 'reroll-btn': '다시 뽑기', 'options-placeholder': '옵션들을 입력하세요 (쉼표 구분)'
   }
 };
 
@@ -43,7 +31,7 @@ async function init() {
   setLocale(); applyTheme(); updateUIText();
   try {
     showLoading(true); await fetchLatestVersion(); await fetchChampions();
-    setupEventListeners(); initRoulette(); initLadder(); initTeamSplitter(); initMissionGenerator();
+    setupEventListeners(); initBallPicker(); initLadder(); initTeamSplitter();
   } catch (e) { console.error(e); }
   finally { showLoading(false); }
 }
@@ -60,8 +48,8 @@ async function fetchChampions() { const res = await fetch(`${CONFIG.DATA_DRAGON_
 
 function setupEventListeners() {
   document.getElementById('theme-toggle')?.addEventListener('change', toggleTheme);
-  document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', () => {
-    document.querySelectorAll('.tab-btn, .tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click', () => {
+    document.querySelectorAll('.nav-btn, .tab-content').forEach(el => el.classList.remove('active'));
     btn.classList.add('active'); document.getElementById(btn.dataset.tab).classList.add('active');
   }));
   document.querySelectorAll('.role-btn').forEach(btn => btn.addEventListener('click', () => {
@@ -79,81 +67,81 @@ function showBigResult(title, text) {
 }
 window.closeResult = () => document.getElementById('big-result-overlay').classList.add('hidden');
 
-function initRoulette() {
-  const tape = document.getElementById('roulette-tape');
-  const startBtn = document.getElementById('pinball-start');
-  const input = document.getElementById('pinball-input');
-  let isSpinning = false;
+// New Physics-based Ball Picker (inspired by bluedell)
+function initBallPicker() {
+  const canvas = document.getElementById('pinball-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d'), startBtn = document.getElementById('pinball-start'), input = document.getElementById('pinball-input');
+  
+  let balls = [], isRunning = false;
+  const gravity = 0.25, friction = 0.98, wallBounciness = 0.7;
 
-  startBtn.addEventListener('click', () => {
-    if (isSpinning) return;
-    const opts = (input.value || "A,B,C,D,E,F").split(',').map(o => o.trim()).filter(o => o);
-    if (opts.length < 2) return;
-    isSpinning = true;
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    balls.forEach(b => {
+      ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+      ctx.fillStyle = b.color; ctx.fill();
+      ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
+      ctx.fillStyle = "#fff"; ctx.font = "bold 12px Spiegel"; ctx.textAlign = "center";
+      ctx.fillText(b.label.substring(0, 5), b.x, b.y + 5);
+    });
+  }
 
-    tape.innerHTML = '';
-    for (let i = 0; i < 60; i++) {
-      const div = document.createElement('div');
-      div.className = 'roulette-item';
-      div.textContent = opts[i % opts.length];
-      tape.appendChild(div);
+  function update() {
+    balls.forEach(b => {
+      b.vy += gravity; b.x += b.vx; b.y += b.vy;
+      if (b.x + b.r > canvas.width || b.x - b.r < 0) { b.vx *= -wallBounciness; b.x = b.x < b.r ? b.r : canvas.width - b.r; }
+      if (b.y + b.r > canvas.height) { b.vy *= -wallBounciness; b.vx *= friction; b.y = canvas.height - b.r; }
+      // Random jump to keep it "bouncing"
+      if (Math.abs(b.vy) < 1 && b.y > canvas.height - b.r - 5) { b.vy = -Math.random() * 10 - 5; b.vx = (Math.random() - 0.5) * 10; }
+    });
+  }
+
+  function pick() {
+    if (isRunning) return;
+    const opts = (input.value || "1,2,3,4,5,6,7,8,9,10").split(',').map(o => o.trim()).filter(o => o);
+    if (!opts.length) return;
+    isRunning = true;
+    balls = opts.map((opt, i) => ({
+      x: Math.random() * canvas.width, y: canvas.height - 20, r: 25, label: opt,
+      vx: (Math.random() - 0.5) * 15, vy: -Math.random() * 15 - 10,
+      color: `hsl(${i * 360 / opts.length}, 70%, 50%)`
+    }));
+
+    const startTime = Date.now();
+    function loop() {
+      update(); draw();
+      if (Date.now() - startTime < 4000) requestAnimationFrame(loop);
+      else {
+        isRunning = false;
+        const winner = balls[Math.floor(Math.random() * balls.length)].label;
+        showBigResult("BALL PICKED", winner);
+      }
     }
-
-    const itemHeight = 120;
-    const winnerIdx = 45 + Math.floor(Math.random() * 10);
-    const winnerName = opts[winnerIdx % opts.length];
-    const offset = winnerIdx * itemHeight;
-
-    tape.style.transition = 'none';
-    tape.style.transform = `translateY(0px)`;
-    setTimeout(() => {
-      tape.style.transition = 'transform 4s cubic-bezier(0.1, 0, 0.1, 1.1)';
-      tape.style.transform = `translateY(-${offset}px)`;
-    }, 50);
-
-    setTimeout(() => {
-      isSpinning = false;
-      showBigResult("WINNER", winnerName);
-    }, 4500);
-  });
+    loop();
+  }
+  startBtn.addEventListener('click', pick);
+  canvas.width = canvas.parentElement.clientWidth; canvas.height = 300;
 }
 
 function initLadder() {
   const canvas = document.getElementById('ladder-canvas'), ctx = canvas.getContext('2d'), startBtn = document.getElementById('ladder-start');
   const pIn = document.getElementById('ladder-players-input'), rIn = document.getElementById('ladder-results-input');
-
   startBtn.addEventListener('click', () => {
     const players = (pIn.value || "A,B,C,D").split(',').map(s => s.trim()).filter(s => s);
     const results = (rIn.value || "1,2,3,4").split(',').map(s => s.trim()).filter(s => s);
     const count = Math.min(players.length, results.length); if (count < 2) return;
-    
     canvas.width = canvas.parentElement.clientWidth; canvas.height = 300;
     const spacing = canvas.width / (count + 1), lines = [];
     for (let i = 0; i < count - 1; i++) { for (let j = 0; j < 4; j++) lines.push({ from: i, to: i + 1, y: 50 + Math.random() * 200 }); }
-    
-    let pathIdx = 0;
-    function animate() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.strokeStyle = '#c89b3c'; ctx.lineWidth = 2;
-      for (let i = 0; i < count; i++) {
-        const x = spacing * (i + 1); ctx.beginPath(); ctx.moveTo(x, 40); ctx.lineTo(x, 260); ctx.stroke();
-        ctx.fillStyle = '#f0e6d2'; ctx.font = 'bold 14px Spiegel'; ctx.textAlign = 'center';
-        ctx.fillText(players[i], x, 30); ctx.fillText(results[i], x, 280);
-      }
-      lines.forEach(l => { ctx.beginPath(); ctx.moveTo(spacing * (l.from + 1), l.y); ctx.lineTo(spacing * (l.to + 1), l.y); ctx.stroke(); });
-
-      let currX = pathIdx, currY = 40;
-      ctx.strokeStyle = '#00cfbc'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(spacing * (currX + 1), currY);
-      [...lines].sort((a,b) => a.y - b.y).forEach(l => {
-        if (l.from === currX) { ctx.lineTo(spacing*(currX+1), l.y); currX = l.to; ctx.lineTo(spacing*(currX+1), l.y); }
-        else if (l.to === currX) { ctx.lineTo(spacing*(currX+1), l.y); currX = l.from; ctx.lineTo(spacing*(currX+1), l.y); }
-      });
-      ctx.lineTo(spacing * (currX + 1), 260); ctx.stroke();
-      
-      if (pathIdx < count - 1) { pathIdx++; setTimeout(animate, 800); }
-      else { setTimeout(() => showBigResult("LADDER FINISHED", "Check paths!"), 500); }
+    ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.strokeStyle = '#c89b3c'; ctx.lineWidth = 2;
+    for (let i = 0; i < count; i++) {
+      const x = spacing * (i + 1); ctx.beginPath(); ctx.moveTo(x, 40); ctx.lineTo(x, 260); ctx.stroke();
+      ctx.fillStyle = '#f0e6d2'; ctx.font = 'bold 12px Spiegel'; ctx.textAlign = 'center';
+      ctx.fillText(players[i], x, 30); ctx.fillText(results[i], x, 280);
     }
-    animate();
+    lines.forEach(l => { ctx.beginPath(); ctx.moveTo(spacing * (l.from + 1), l.y); ctx.lineTo(spacing * (l.to + 1), l.y); ctx.stroke(); });
+    setTimeout(() => showBigResult("LADDER", "Check paths!"), 1000);
   });
 }
 
@@ -161,22 +149,13 @@ function initTeamSplitter() {
   const list = document.getElementById('team-pair-list'), addBtn = document.getElementById('add-pair-btn'), startBtn = document.getElementById('team-start');
   function createRow() {
     const row = document.createElement('div'); row.className = 'team-pair-row';
-    row.innerHTML = `<input type="text" class="pair-input" placeholder="BLUE"><button class="gap-btn">></button><input type="text" class="pair-input" placeholder="RED"><span class="remove-pair">×</span>`;
+    row.innerHTML = `<input type="text" class="pair-input" placeholder="BLUE"><button class="gap-btn">></button><input type="text" class="pair-input" placeholder="RED">`;
     row.querySelector('.gap-btn').addEventListener('click', e => e.target.textContent = e.target.textContent === '>' ? '<' : '>');
-    row.querySelector('.remove-pair').addEventListener('click', () => row.remove());
     list.appendChild(row);
   }
   addBtn.addEventListener('click', createRow);
   startBtn.addEventListener('click', () => showBigResult("TEAM GAP", "Teams Balanced!"));
   for(let i=0; i<5; i++) createRow();
-}
-
-function initMissionGenerator() {
-  const btn = document.getElementById('mission-start');
-  btn.addEventListener('click', () => {
-    const missions = MISSIONS[currentState.locale] || MISSIONS['en_US'];
-    showBigResult("MISSION", missions[Math.floor(Math.random() * missions.length)]);
-  });
 }
 
 async function pickRandomChampion(role) {
