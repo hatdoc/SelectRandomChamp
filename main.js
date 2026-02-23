@@ -21,6 +21,12 @@ const TRANSLATIONS = {
     'loading': 'Summoning champion...',
     'theme-toggle-light': 'Light Mode',
     'theme-toggle-dark': 'Dark Mode',
+    'about-title': 'About What Champ to Play?',
+    'about-p1': 'Choosing a champion in League of Legends can be a daunting task with over 160 unique characters. Our tool helps you break the analysis paralysis by suggesting a champion tailored to your preferred role.',
+    'how-it-works-title': 'How It Works',
+    'how-it-works-p1': 'Our algorithm uses real-time data from the Riot Games Data Dragon API to fetch the latest champion information, including their abilities, roles, and playstyles.',
+    'tips-desc-title': 'Master Your Champion',
+    'tips-desc-p1': "Each recommendation comes with pro tips and strategy guides. We don't just give you a name; we give you the 'Ally Tips' directly from the developers to help you understand your power spikes and combos.",
     'disclaimer': "WhatChampToPlay isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing League of Legends."
   },
   'ko_KR': {
@@ -36,6 +42,12 @@ const TRANSLATIONS = {
     'loading': '챔피언을 불러오는 중...',
     'theme-toggle-light': '라이트 모드',
     'theme-toggle-dark': '다크 모드',
+    'about-title': '뭐 할까? 란 무엇인가요?',
+    'about-p1': '리그 오브 레전드에는 160명이 넘는 챔피언이 있어 선택이 어려울 수 있습니다. 본 서비스는 여러분이 선호하는 라인에 맞는 챔피언을 무작위로 추천하여 고민을 해결해 드립니다.',
+    'how-it-works-title': '어떻게 작동하나요?',
+    'how-it-works-p1': '본 서비스의 알고리즘은 라이엇 게임즈의 Data Dragon API를 실시간으로 활용하여 챔피언의 최신 정보, 역할군 및 플레이 스타일을 가져옵니다.',
+    'tips-desc-title': '챔피언 마스터하기',
+    'tips-desc-p1': "단순히 이름만 알려주는 것이 아니라, 라이엇 개발진이 제공하는 '아군 팀 팁'을 통해 해당 챔피언의 스킬 콤보, 아이템 시너지 및 운영법을 한눈에 확인할 수 있습니다.",
     'disclaimer': "WhatChampToPlay는 Riot Games의 승인을 받지 않았으며 Riot Games 또는 League of Legends를 제작하거나 관리하는 데 공식적으로 관여한 모든 사람의 견해나 의견을 반영하지 않습니다."
   }
 };

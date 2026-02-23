@@ -254,6 +254,52 @@ header p {
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* Content Depth for AdSense Approval */
+.content-depth {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin: 4rem 0;
+  text-align: left;
+}
+
+.info-card {
+  background: var(--lol-card-bg);
+  padding: 1.5rem;
+  border-left: 2px solid var(--lol-gold);
+  border: 1px solid var(--lol-card-border);
+}
+
+.info-card h2 {
+  font-family: 'Beaufort for LoL', serif;
+  color: var(--lol-gold);
+  font-size: 1.3rem;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+}
+
+.info-card p {
+  color: var(--lol-blue-grey);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.footer-nav {
+  margin-bottom: 1.5rem;
+}
+
+.footer-nav a {
+  color: var(--lol-gold);
+  text-decoration: none;
+  margin: 0 10px;
+  font-weight: bold;
+}
+
+.footer-nav a:hover {
+  color: var(--lol-gold-hover);
+  text-decoration: underline;
+}
+
 /* Advertisement Styling */
 .ad-container {
   margin: 3rem auto;
