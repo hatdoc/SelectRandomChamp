@@ -130,7 +130,6 @@ function initPinball() {
     focusTool('pinball-tool'); setup(); isRunning = true;
     balls = [];
     
-    // Create balls and shuffle them to randomize release order for fair "Last Wins"
     const tempBalls = [];
     opts.forEach((opt, i) => {
       for(let j=0; j<30; j++) {
@@ -138,7 +137,6 @@ function initPinball() {
       }
     });
     
-    // Shuffle tempBalls
     for (let i = tempBalls.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [tempBalls[i], tempBalls[j]] = [tempBalls[j], tempBalls[i]];
@@ -146,7 +144,7 @@ function initPinball() {
 
     balls = tempBalls.map((b, i) => ({
       x: canvas.width / 2 + (Math.random() - 0.5) * 80, 
-      y: -20 - (i * 15), // Randomized Y based on shuffled order
+      y: -20 - (i * 15), 
       r: 8, label: b.label, color: b.color,
       vx: (Math.random() - 0.5) * 3, vy: 1, finished: false
     }));
@@ -166,6 +164,7 @@ function initPinball() {
       balls.forEach(b => {
         if (b.finished) return; active++;
         b.vy += gravity; b.x += b.vx; b.y += b.vy;
+        
         pins.forEach(p => {
           const dx = b.x - p.x, dy = b.y - p.y, dist = Math.sqrt(dx*dx + dy*dy);
           if (dist < b.r + 2) {
@@ -174,6 +173,24 @@ function initPinball() {
             b.vy = Math.sin(angle) * speed * bounciness; b.y += b.vy;
           }
         });
+
+        spinners.forEach(s => {
+          const x1 = s.x + Math.cos(s.angle) * 20, y1 = s.y + Math.sin(s.angle) * 20;
+          const x2 = s.x - Math.cos(s.angle) * 20, y2 = s.y - Math.sin(s.angle) * 20;
+          const l2 = 40 * 40;
+          const t = Math.max(0, Math.min(1, ((b.x - x1) * (x2 - x1) + (b.y - y1) * (y2 - y1)) / l2));
+          const closestX = x1 + t * (x2 - x1), closestY = y1 + t * (y2 - y1);
+          const dx = b.x - closestX, dy = b.y - closestY, dist = Math.sqrt(dx * dx + dy * dy);
+          
+          if (dist < b.r + 2) {
+            const nx = dx / dist, ny = dy / dist;
+            const dot = b.vx * nx + b.vy * ny;
+            b.vx = (b.vx - 2 * dot * nx) * bounciness + (Math.random() - 0.5) * 4;
+            b.vy = (b.vy - 2 * dot * ny) * bounciness - 2;
+            b.x = closestX + nx * (b.r + 3); b.y = closestY + ny * (b.r + 3);
+          }
+        });
+
         if (b.x < b.r || b.x > canvas.width - b.r) { b.vx *= -0.7; b.x = b.x < b.r ? b.r : canvas.width - b.r; }
         if (b.y > canvas.height - 10) { b.finished = true; b.finishTime = Date.now(); }
         ctx.fillStyle = b.color; ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2); ctx.fill();
@@ -218,9 +235,7 @@ function initLadder() {
     skipBtn.classList.remove('hidden');
     
     const spacing = canvas.width / (count + 1), lines = [];
-    for (let i = 0; i < count - 1; i++) { 
-      for (let j = 0; j < 15; j++) lines.push({ from: i, to: i + 1, y: 70 + Math.random() * 270 }); 
-    }
+    for (let i = 0; i < count - 1; i++) { for (let j = 0; j < 15; j++) lines.push({ from: i, to: i + 1, y: 70 + Math.random() * 270 }); }
     const sortedLines = [...lines].sort((a,b) => a.y - b.y);
     
     let pathIdx = 0;
@@ -280,8 +295,7 @@ function initLadder() {
       for (let i = 0; i < count; i++) {
         const x = spacing * (i + 1); ctx.beginPath(); ctx.moveTo(x, 60); ctx.lineTo(x, 350); ctx.stroke();
         ctx.fillStyle = '#f0e6d2'; ctx.font = 'bold 14px Spiegel'; ctx.textAlign = 'center';
-        ctx.fillText(players[i], x, 50);
-        ctx.fillText(results[i], x, 370); // Always visible
+        ctx.fillText(players[i], x, 50); ctx.fillText(results[i], x, 370);
       }
       lines.forEach(l => { ctx.beginPath(); ctx.moveTo(spacing*(l.from+1), l.y); ctx.lineTo(spacing*(l.to+1), l.y); ctx.stroke(); });
       for(let p = 0; p < currentRevealIdx; p++) {
