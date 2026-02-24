@@ -21,12 +21,12 @@ const TRANSLATIONS = {
 
 const MISSION_DATA = {
   'actions': {
-    'ko_KR': ["노데스 승리", "오브젝트 스틸", "5인 궁극기 대박", "솔로킬 따내기", "퍼스트 블러드", "바론/용 스틸", "제어 와드 5개 설치", "팀 내 딜량 1위", "상대 정글 몬스터 처치"],
-    'en_US': ["Zero Death Win", "Object Steal", "5-Man Ult", "Solo Kill", "First Blood", "Baron/Dragon Steal", "Buy 5 Pink Wards", "Highest Damage", "Counter Jungling"]
+    'ko_KR': ["게임 승리", "솔로킬 1회 이상", "오브젝트(용/바론) 스틸", "적 팀보다 높은 딜량", "노데스로 경기 종료", "퍼스트 블러드 따내기", "제어 와드 5개 이상 설치", "상대 라이너와 CS 30개 차이", "전체 데스 3회 이하 유지"],
+    'en_US': ["Win the game", "At least 1 Solokill", "Objective (Dragon/Baron) Steal", "Highest Damage in match", "Zero Death Game", "Get First Blood", "Place 5+ Control Wards", "30+ CS Gap with opponent", "Under 3 Deaths total"]
   },
   'targets': {
-    'ko_KR': ["무조건 성공하기", "20분 안에 달성", "영어 한 마디도 안 하기", "영어만 사용하기 (교포 방송)", "죽을 때마다 벌칙 수행", "노데스로 성공하기", "팀원 칭찬 들으며 하기", "성공 시 시청자에게 선물", "실패 시 다음 판 서포터"],
-    'en_US': ["Must Succeed", "Before 20 mins", "No English Challenge", "English Only Challenge", "Penalty on every death", "Zero Death Challenge", "Get a compliment from team", "Giveaway on success", "If failed, play Supp next"]
+    'ko_KR': ["영어 한 마디도 안 하기", "영어만 사용하기 (교포 방송)", "죽을 때마다 애교/벌칙 수행", "20분 안에 게임 끝내기", "성공 시 시청자에게 치킨", "한 손으로만 게임하기", "성공 시 노래 한 곡 완창", "실패 시 다음 판 서포터", "성공 시 룰렛 10번 돌리기"],
+    'en_US': ["No English Challenge", "English Only Challenge", "Penalty on every death", "Finish game before 20m", "Giveaway on success", "One-hand play challenge", "Sing a song on success", "If failed, play Supp next", "Spin roulette 10x on success"]
   }
 };
 
@@ -95,7 +95,10 @@ const FORTUNES = {
     "행운의 예감: 오늘 산 복권이 5등은 당첨될 것 같습니다.",
     "당신의 매력: 오늘따라 당신의 미소가 아주 치명적입니다. 거울을 보세요.",
     "보너스: 오늘 야식을 먹어도 몸무게가 변하지 않는 마법 같은 일이 일어납니다.",
-    "도망가세요. 지금 당장."
+    "도망가세요. 지금 당장.",
+    "운세: 오늘 팀에 트롤이 없을 확률이 99%입니다. 남은 1%는 당신일 수도?",
+    "행운: 오늘 첫 판을 이기면 연승 가도를 달릴 수 있습니다. 지면? 그냥 자야죠.",
+    "조언: 오늘 게임 중 누군가 당신을 욕한다면 '역시 이상호'라고 대답하세요. 분위기가 묘해질 겁니다."
   ]
 };
 
@@ -500,7 +503,6 @@ function initMissionRoulette() {
     });
   }
 
-  // Set default "???" state
   populateStrip('roulette-champ', [], true);
   populateStrip('roulette-action', [], true);
   populateStrip('roulette-target', [], true);
@@ -517,25 +519,40 @@ function initMissionRoulette() {
     populateStrip('roulette-action', actions);
     populateStrip('roulette-target', targets);
 
-    const strips = document.querySelectorAll('.roulette-strip');
-    const spinDuration = 3000;
-    const interval = 5000;
+    const strips = [
+      document.querySelector('#roulette-champ .roulette-strip'),
+      document.querySelector('#roulette-action .roulette-strip'),
+      document.querySelector('#roulette-target .roulette-strip')
+    ];
 
-    strips.forEach((strip, i) => {
-      const itemsCount = strip.children.length / 7;
-      const targetIdx = Math.floor(Math.random() * itemsCount) + (itemsCount * 3);
-      const offset = targetIdx * 120;
-      
-      strip.style.transition = 'none';
-      strip.style.transform = 'translateY(0)';
-      
-      setTimeout(() => {
-        strip.style.transition = `transform ${spinDuration / 1000}s cubic-bezier(0.1, 0, 0.1, 1)`;
-        strip.style.transform = `translateY(-${offset}px)`;
-      }, i * interval);
-    });
+    const spinDuration = 4000;
 
-    setTimeout(() => { startBtn.disabled = false; }, (strips.length - 1) * interval + spinDuration + 500);
+    const spinWheel = (idx) => {
+      return new Promise(resolve => {
+        const strip = strips[idx];
+        const itemsCount = strip.children.length / 7;
+        const targetIdx = Math.floor(Math.random() * itemsCount) + (itemsCount * 3);
+        const offset = targetIdx * 120;
+        
+        strip.style.transition = 'none';
+        strip.style.transform = 'translateY(0)';
+        
+        setTimeout(() => {
+          strip.style.transition = `transform ${spinDuration / 1000}s cubic-bezier(0.1, 0, 0.1, 1)`;
+          strip.style.transform = `translateY(-${offset}px)`;
+          setTimeout(resolve, spinDuration + 100);
+        }, 50);
+      });
+    };
+
+    async function runSequence() {
+      await spinWheel(0);
+      await spinWheel(1);
+      await spinWheel(2);
+      startBtn.disabled = false;
+    }
+
+    runSequence();
   });
 }
 
