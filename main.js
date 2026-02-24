@@ -25,8 +25,8 @@ const MISSION_DATA = {
     'en_US': ["Zero Death Win", "Object Steal", "5-Man Ult", "Solo Kill", "First Blood", "Baron/Dragon Steal", "Buy 5 Pink Wards", "Highest Damage", "Counter Jungling"]
   },
   'targets': {
-    'ko_KR': ["무조건 성공하기", "20분 안에 달성", "채팅 한 번도 안 치고 하기", "죽을 때마다 벌칙 수행", "상대 도발하며 하기", "노데스로 성공하기", "팀원 칭찬 들으며 하기", "성공 시 시청자에게 선물", "실패 시 다음 판 서포터"],
-    'en_US': ["Must Succeed", "Before 20 mins", "No Chatting Challenge", "Penalty on every death", "With Emote Spamming", "Zero Death Challenge", "Get a compliment from team", "Giveaway on success", "If failed, play Supp next"]
+    'ko_KR': ["무조건 성공하기", "20분 안에 달성", "영어 한 마디도 안 하기", "영어만 사용하기 (교포 방송)", "죽을 때마다 벌칙 수행", "노데스로 성공하기", "팀원 칭찬 들으며 하기", "성공 시 시청자에게 선물", "실패 시 다음 판 서포터"],
+    'en_US': ["Must Succeed", "Before 20 mins", "No English Challenge", "English Only Challenge", "Penalty on every death", "Zero Death Challenge", "Get a compliment from team", "Giveaway on success", "If failed, play Supp next"]
   }
 };
 
@@ -480,9 +480,17 @@ function initMissionRoulette() {
   const startBtn = document.getElementById('mission-start');
   if (!startBtn) return;
 
-  function populateStrip(stripId, items) {
+  function populateStrip(stripId, items, isInitial = false) {
     const strip = document.querySelector(`#${stripId} .roulette-strip`);
     strip.innerHTML = '';
+    if (isInitial) {
+      const div = document.createElement('div');
+      div.className = 'roulette-item';
+      div.textContent = '???';
+      strip.appendChild(div);
+      strip.style.transform = 'translateY(0)';
+      return;
+    }
     const repeated = [...items, ...items, ...items, ...items, ...items, ...items, ...items]; 
     repeated.forEach(item => {
       const div = document.createElement('div');
@@ -491,6 +499,11 @@ function initMissionRoulette() {
       strip.appendChild(div);
     });
   }
+
+  // Set default "???" state
+  populateStrip('roulette-champ', [], true);
+  populateStrip('roulette-action', [], true);
+  populateStrip('roulette-target', [], true);
 
   startBtn.addEventListener('click', () => {
     if (startBtn.disabled) return;
@@ -505,8 +518,6 @@ function initMissionRoulette() {
     populateStrip('roulette-target', targets);
 
     const strips = document.querySelectorAll('.roulette-strip');
-    
-    // Sequence timing
     const spinDuration = 3000;
     const interval = 5000;
 
@@ -518,7 +529,6 @@ function initMissionRoulette() {
       strip.style.transition = 'none';
       strip.style.transform = 'translateY(0)';
       
-      // Delay the start of each wheel to end sequentially
       setTimeout(() => {
         strip.style.transition = `transform ${spinDuration / 1000}s cubic-bezier(0.1, 0, 0.1, 1)`;
         strip.style.transform = `translateY(-${offset}px)`;
