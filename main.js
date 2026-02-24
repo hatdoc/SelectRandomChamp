@@ -8,13 +8,47 @@ const TRANSLATIONS = {
   'en_US': {
     'toolkit-title': 'STREAMER TOOLKIT', 'tab-randomizer': 'Randomizer', 'tab-toolkit': 'Tools',
     'pinball-title': '텐션업 핀볼', 'ladder-title': 'Ghost Leg', 'team-title': '팀짜기',
-    'start-btn': 'Start', 'split-btn': 'Analyze', 'reroll-btn': 'Roll Again', 'options-placeholder': 'A, B, C, D...'
+    'start-btn': 'Start', 'split-btn': 'Analyze', 'reroll-btn': 'Roll Again', 'options-placeholder': 'A, B, C, D...',
+    'fortune-title': 'Today\'s Fortune', 'fortune-btn': 'Check Fortune'
   },
   'ko_KR': {
     'toolkit-title': '스트리머 툴킷', 'tab-randomizer': '챔피언 추천', 'tab-toolkit': '도구 모음',
     'pinball-title': '텐션업 핀볼', 'ladder-title': '사다리 타기', 'team-title': '팀짜기 (밸런스)',
-    'start-btn': '시작하기', 'split-btn': '밸런스 계산', 'reroll-btn': '다시 뽑기', 'options-placeholder': '옵션들을 입력하세요 (쉼표 구분)'
+    'start-btn': '시작하기', 'split-btn': '밸런스 계산', 'reroll-btn': '다시 뽑기', 'options-placeholder': '옵션들을 입력하세요 (쉼표 구분)',
+    'fortune-title': '오늘의 운세', 'fortune-btn': '운세 확인'
   }
+};
+
+const FORTUNES = {
+  'en_US': [
+    "You will lose your next game, but it's not your fault. It's the jungler.",
+    "Fortune: Beware of the keyboard. Repair costs are rising.",
+    "A legendary skin is in your future... but for a champion you don't play.",
+    "Warning: Someone is behind you. Oh, it's just a mirror.",
+    "Item of the day: Control Ward. But you probably won't buy it.",
+    "You will carry the game, but your team will still find a way to lose.",
+    "Luck: 100%. Skill: 0%. You'll fit right in on Reddit.",
+    "Run away. Right now.",
+    "Your future is bright. Unlike your teammate's brain.",
+    "Fortune: You will hit every skillshot... in your dreams."
+  ],
+  'ko_KR': [
+    "오늘의 행운: 게임에서 지겠지만 실력 탓은 아닙니다. 팀운입니다.",
+    "오늘의 주의: 키보드 샷건 조심하세요. 수리비가 더 많이 나옵니다.",
+    "운세: 당신의 뒤에 누군가 있습니다. 아, 거울이군요.",
+    "오늘의 아이템: 핑크 와드. 근데 당신은 안 사겠죠.",
+    "행운: 오늘 랭크 게임을 안 돌리면 티어 점수를 유지할 수 있습니다.",
+    "주의: 마우스 클릭이 평소보다 0.1초 늦어질 운명입니다. 핑 탓 하세요.",
+    "운세: 최악. 하지만 내일은 더 안 좋을 수도 있습니다.",
+    "당신의 미래: 오늘 밤 야식이 아주 맛있을 예정입니다. 0칼로리는 아닙니다.",
+    "오늘의 행운의 아이템: 남이 쓰다 버린 껌.",
+    "오늘의 운세: 0데스 실화입니까? 네, 우물에서 안 나가셨군요.",
+    "주의: 오늘 당신의 서포터는 CS를 당신보다 더 잘 먹을 예정입니다.",
+    "행운: 적 팀에 당신보다 못하는 사람이 딱 한 명 있습니다. 물론 찾기 힘들 겁니다.",
+    "운세: 오늘 연패 탈출의 기회가 보입니다. 아, 방금 사라졌네요. 까비.",
+    "팁: 오늘 게임이 계속 안 풀린다면 모니터를 끄고 잠을 자는 것이 인생에 이득입니다.",
+    "도망가세요. 지금 당장."
+  ]
 };
 
 let currentState = { version: null, locale: CONFIG.DEFAULT_LOCALE, champions: [], selectedRole: null, theme: localStorage.getItem('theme') || 'dark' };
@@ -31,7 +65,7 @@ async function init() {
   setLocale(); applyTheme(); updateUIText();
   try {
     showLoading(true); await fetchLatestVersion(); await fetchChampions();
-    setupEventListeners(); initPinball(); initLadder(); initTeamSplitter(); initFocusMode();
+    setupEventListeners(); initPinball(); initLadder(); initTeamSplitter(); initFocusMode(); initFortuneTool();
   } catch (e) { console.error(e); }
   finally { showLoading(false); }
 }
@@ -333,7 +367,7 @@ function initLadder() {
 }
 
 function initTeamSplitter() {
-  const list = document.getElementById('team-pair-list'), addBtn = document.getElementById('add-pair-btn'), startBtn = document.getElementById('team-start');
+  const list = document.getElementById('team-pair-list'), addBtn = document.getElementById('add-pair-btn');
   function createRow() {
     const row = document.createElement('div'); row.className = 'team-pair-row';
     row.innerHTML = `<input type="text" class="pair-input" placeholder="BLUE"><button class="gap-btn">=</button><input type="text" class="pair-input" placeholder="RED">`;
@@ -343,8 +377,22 @@ function initTeamSplitter() {
     list.appendChild(row);
   }
   addBtn.addEventListener('click', createRow);
-  startBtn.addEventListener('click', () => { focusTool('team-tool'); setTimeout(() => showBigResult("팀짜기 완료", "밸런스 조정 성공!"), 1000); });
   for(let i=0; i<5; i++) createRow();
+}
+
+function initFortuneTool() {
+  const startBtn = document.getElementById('fortune-start'), display = document.getElementById('fortune-text');
+  if (!startBtn) return;
+  startBtn.addEventListener('click', () => {
+    const list = FORTUNES[currentState.locale] || FORTUNES['en_US'];
+    const fortune = list[Math.floor(Math.random() * list.length)];
+    display.style.opacity = 0;
+    setTimeout(() => {
+      display.textContent = fortune;
+      display.style.opacity = 1;
+      showBigResult(TRANSLATIONS[currentState.locale]['fortune-title'], fortune);
+    }, 200);
+  });
 }
 
 async function pickRandomChampion(role) {
