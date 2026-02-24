@@ -6,16 +6,27 @@ const CONFIG = {
 
 const TRANSLATIONS = {
   'en_US': {
-    'toolkit-title': 'STREAMER TOOLKIT', 'tab-randomizer': 'Randomizer', 'tab-toolkit': 'Tools',
+    'toolkit-title': 'STREAMER TOOLKIT', 'tab-randomizer': 'Randomizer', 'tab-toolkit': 'Tools', 'tab-mission': 'Missions',
     'pinball-title': '텐션업 핀볼', 'ladder-title': 'Ghost Leg', 'team-title': '팀짜기',
     'start-btn': 'Start', 'split-btn': 'Analyze', 'reroll-btn': 'Roll Again', 'options-placeholder': 'A, B, C, D...',
     'fortune-title': 'Today\'s Fortune', 'fortune-btn': 'Check Fortune'
   },
   'ko_KR': {
-    'toolkit-title': '스트리머 툴킷', 'tab-randomizer': '챔피언 추천', 'tab-toolkit': '도구 모음',
+    'toolkit-title': '스트리머 툴킷', 'tab-randomizer': '챔피언 추천', 'tab-toolkit': '도구 모음', 'tab-mission': '미션 생성기',
     'pinball-title': '텐션업 핀볼', 'ladder-title': '사다리 타기', 'team-title': '팀짜기 (밸런스)',
     'start-btn': '시작하기', 'split-btn': '밸런스 계산', 'reroll-btn': '다시 뽑기', 'options-placeholder': '옵션들을 입력하세요 (쉼표 구분)',
     'fortune-title': '오늘의 운세', 'fortune-btn': '운세 확인'
+  }
+};
+
+const MISSION_DATA = {
+  'actions': {
+    'ko_KR': ["킬 달성", "오브젝트 스틸", "5인 궁극기", "CS 차이 벌리기", "솔로킬", "데스 제로", "퍼스트 블러드", "바론/용 스틸", "제어 와드 구매"],
+    'en_US': ["Kills", "Object Steals", "5-Man Ult", "CS Difference", "Solokill", "Death zero", "First Blood", "Baron/Dragon Steal", "Control Ward Buying"]
+  },
+  'targets': {
+    'ko_KR': ["10회 이상", "5회 미만 유지", "한 번도 죽지 않기", "팀에서 1등", "20분 안에 달성", "3번 연속 성공", "눈 감고 하기", "말 안하고 하기", "치킨 걸고 하기"],
+    'en_US': ["More than 10 times", "Under 5 deaths", "Zero death challenge", "Highest in team", "Before 20 mins", "3 times in a row", "Blindfolded", "No talking challenge", "Winner Winner Chicken Dinner"]
   }
 };
 
@@ -78,7 +89,16 @@ const FORTUNES = {
   ]
 };
 
-let currentState = { version: null, locale: CONFIG.DEFAULT_LOCALE, champions: [], selectedRole: null, theme: localStorage.getItem('theme') || 'dark' };
+let currentState = { 
+  version: null, 
+  locale: CONFIG.DEFAULT_LOCALE, 
+  champions: [], 
+  selectedRole: null, 
+  theme: localStorage.getItem('theme') || 'dark',
+  currentSkins: [],
+  skinIndex: 0,
+  currentChampId: null
+};
 
 const ROLE_OVERRIDES = {
   'TOP': ['Aatrox', 'Camille', 'Darius', 'DrMundo', 'Fiora', 'Garen', 'Gnar', 'Gwen', 'Illaoi', 'Irelia', 'Jax', 'Jayce', 'KSante', 'Kayle', 'Kled', 'Malphite', 'Mordekaiser', 'Nasus', 'Olaf', 'Ornn', 'Pantheon', 'Poppy', 'Quinn', 'Renekton', 'Riven', 'Rumble', 'Sett', 'Shen', 'Singed', 'Sion', 'Teemo', 'Tryndamere', 'Urgot', 'Volibear', 'Warwick', 'Yorick'],
@@ -92,7 +112,7 @@ async function init() {
   setLocale(); applyTheme(); updateUIText();
   try {
     showLoading(true); await fetchLatestVersion(); await fetchChampions();
-    setupEventListeners(); initPinball(); initLadder(); initTeamSplitter(); initFocusMode(); initFortuneTool();
+    setupEventListeners(); initPinball(); initLadder(); initTeamSplitter(); initFocusMode(); initFortuneTool(); initMissionRoulette();
   } catch (e) { console.error(e); }
   finally { showLoading(false); }
 }
@@ -135,7 +155,11 @@ function setupEventListeners() {
     document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active'); pickRandomChampion(btn.getAttribute('data-role'));
   }));
-  document.addEventListener('click', e => { if (e.target.id === 'reroll-btn' && currentState.selectedRole) pickRandomChampion(currentState.selectedRole); });
+  document.addEventListener('click', e => { 
+    if (e.target.id === 'reroll-btn' && currentState.selectedRole) pickRandomChampion(currentState.selectedRole);
+    if (e.target.classList.contains('prev')) changeSkin(-1);
+    if (e.target.classList.contains('next')) changeSkin(1);
+  });
 }
 
 function showBigResult(title, text) {
@@ -443,17 +467,103 @@ function initFortuneTool() {
   });
 }
 
+function initMissionRoulette() {
+  const startBtn = document.getElementById('mission-start');
+  if (!startBtn) return;
+
+  function populateStrip(stripId, items) {
+    const strip = document.querySelector(`#${stripId} .roulette-strip`);
+    strip.innerHTML = '';
+    const repeated = [...items, ...items, ...items, ...items, ...items, ...items, ...items]; 
+    repeated.forEach(item => {
+      const div = document.createElement('div');
+      div.className = 'roulette-item';
+      div.textContent = item;
+      strip.appendChild(div);
+    });
+  }
+
+  startBtn.addEventListener('click', () => {
+    if (startBtn.disabled) return;
+    startBtn.disabled = true;
+
+    const champNames = currentState.champions.map(c => c.name);
+    const actions = MISSION_DATA.actions[currentState.locale] || MISSION_DATA.actions['en_US'];
+    const targets = MISSION_DATA.targets[currentState.locale] || MISSION_DATA.targets['en_US'];
+
+    populateStrip('roulette-champ', champNames);
+    populateStrip('roulette-action', actions);
+    populateStrip('roulette-target', targets);
+
+    const strips = document.querySelectorAll('.roulette-strip');
+    strips.forEach((strip, i) => {
+      const itemsCount = strip.children.length / 7;
+      const targetIdx = Math.floor(Math.random() * itemsCount) + (itemsCount * 3);
+      const offset = targetIdx * 120;
+      strip.style.transition = 'none';
+      strip.style.transform = 'translateY(0)';
+      setTimeout(() => {
+        strip.style.transition = `transform ${2.5 + i * 0.8}s cubic-bezier(0.1, 0, 0.1, 1)`;
+        strip.style.transform = `translateY(-${offset}px)`;
+      }, 50);
+    });
+
+    setTimeout(() => { startBtn.disabled = false; }, 4500);
+  });
+}
+
 async function pickRandomChampion(role) {
   currentState.selectedRole = role; showLoading(true);
   try {
     const res = await fetch(`${CONFIG.DATA_DRAGON_BASE}/${currentState.version}/data/${currentState.locale}/champion.json`);
     const data = await res.json(), filtered = Object.values(data.data).filter(c => ROLE_OVERRIDES[role]?.includes(c.id));
-    const champ = (filtered.length ? filtered : Object.values(data.data))[Math.floor(Math.random() * (filtered.length || 1))];
+    const champBase = (filtered.length ? filtered : Object.values(data.data))[Math.floor(Math.random() * (filtered.length || 1))];
+    
+    // Fetch full data for skins
+    const fullRes = await fetch(`${CONFIG.DATA_DRAGON_BASE}/${currentState.version}/data/${currentState.locale}/champion/${champBase.id}.json`);
+    const fullData = await fullRes.json();
+    const champ = fullData.data[champBase.id];
+
+    currentState.currentSkins = champ.skins;
+    currentState.skinIndex = 0;
+    currentState.currentChampId = champ.id;
+    
+    updateSkinDisplay(champ.id);
     document.getElementById('champ-name').textContent = champ.name;
-    document.getElementById('champ-splash').src = `https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${champ.id}_0.jpg`;
+    
+    // Voice playback
+    const voiceUrl = `https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-choose-vo/${champ.key}.ogg`;
+    const audio = new Audio(voiceUrl);
+    audio.volume = 0.5;
+    audio.play().catch(e => console.log("Audio play blocked"));
+
+    // Analysis Links
+    const opgg = document.getElementById('opgg-link'), lolps = document.getElementById('lolps-link');
+    opgg.href = `https://www.op.gg/champions/${champ.id.toLowerCase()}/build`;
+    lolps.href = `https://lol.ps/champion/${champ.key}`;
+
     document.getElementById('result-area').classList.remove('hidden');
     document.getElementById('result-area').scrollIntoView({ behavior: 'smooth' });
   } finally { showLoading(false); }
+}
+
+function updateSkinDisplay(champId) {
+  const skin = currentState.currentSkins[currentState.skinIndex];
+  const splash = document.getElementById('champ-splash');
+  const nameDisplay = document.getElementById('skin-name');
+  
+  splash.style.opacity = 0;
+  setTimeout(() => {
+    splash.src = `https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${champId}_${skin.num}.jpg`;
+    nameDisplay.textContent = skin.name === 'default' ? document.getElementById('champ-name').textContent : skin.name;
+    splash.style.opacity = 1;
+  }, 200);
+}
+
+function changeSkin(dir) {
+  if (!currentState.currentSkins.length) return;
+  currentState.skinIndex = (currentState.skinIndex + dir + currentState.currentSkins.length) % currentState.currentSkins.length;
+  updateSkinDisplay(currentState.currentChampId);
 }
 
 function showLoading(show) { document.getElementById('loading')?.classList.toggle('hidden', !show); }

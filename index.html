@@ -33,6 +33,10 @@
           <span class="icon">🎲</span>
           <span data-i18n="tab-randomizer">Randomizer</span>
         </button>
+        <button class="nav-btn" data-tab="mission-roulette">
+          <span class="icon">🎯</span>
+          <span data-i18n="tab-mission">Missions</span>
+        </button>
       </nav>
       <div class="sidebar-footer">
         <div class="premium-theme-toggle">
@@ -147,9 +151,20 @@
 
         <section id="result-area" class="hidden">
           <div class="champion-card">
-            <img id="champ-splash" src="" alt="Champion Splash">
+            <div class="skin-slideshow">
+              <img id="champ-splash" src="" alt="Champion Splash">
+              <div class="skin-controls">
+                <button class="skin-btn prev">❮</button>
+                <button class="skin-btn next">❯</button>
+              </div>
+              <div id="skin-name">Default Skin</div>
+            </div>
             <div class="champion-info">
               <h2 id="champ-name">Champion Name</h2>
+              <div class="analysis-links">
+                <a id="opgg-link" href="#" target="_blank" class="link-btn opgg">OP.GG</a>
+                <a id="lolps-link" href="#" target="_blank" class="link-btn lolps">LoL.PS</a>
+              </div>
               <button id="reroll-btn" class="primary-btn" data-i18n="reroll-btn">Roll Again</button>
             </div>
           </div>
@@ -157,6 +172,33 @@
 
         <div id="loading" class="hidden">
           <div class="spinner"></div>
+        </div>
+      </div>
+
+      <!-- Mission Roulette -->
+      <div id="mission-roulette" class="tab-content">
+        <div class="toolkit-header">
+          <h2 data-i18n="tab-mission">Mission Roulette</h2>
+          <p>Generate random challenges for your stream</p>
+        </div>
+        <div class="mission-container">
+          <div class="roulette-group">
+            <div class="roulette-box" id="roulette-champ">
+              <div class="roulette-label">CHAMPION</div>
+              <div class="roulette-window"><div class="roulette-strip"></div></div>
+            </div>
+            <div class="roulette-box" id="roulette-action">
+              <div class="roulette-label">ACTION</div>
+              <div class="roulette-window"><div class="roulette-strip"></div></div>
+            </div>
+            <div class="roulette-box" id="roulette-target">
+              <div class="roulette-label">GOAL</div>
+              <div class="roulette-window"><div class="roulette-strip"></div></div>
+            </div>
+          </div>
+          <div class="mission-controls">
+            <button id="mission-start" class="primary-btn big-btn">SPIN MISSIONS</button>
+          </div>
         </div>
       </div>
     </main>
