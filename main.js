@@ -21,12 +21,12 @@ const TRANSLATIONS = {
 
 const MISSION_DATA = {
   'actions': {
-    'ko_KR': ["게임 승리", "솔로킬 1회 이상", "오브젝트(용/바론) 스틸", "적 팀보다 높은 딜량", "노데스로 경기 종료", "퍼스트 블러드 따내기", "제어 와드 5개 이상 설치", "상대 라이너와 CS 30개 차이", "전체 데스 3회 이하 유지"],
-    'en_US': ["Win the game", "At least 1 Solokill", "Objective (Dragon/Baron) Steal", "Highest Damage in match", "Zero Death Game", "Get First Blood", "Place 5+ Control Wards", "30+ CS Gap with opponent", "Under 3 Deaths total"]
+    'ko_KR': ["게임 승리", "솔로킬 1회 이상", "오브젝트(용/바론) 스틸", "적 팀보다 높은 딜량", "노데스로 경기 종료", "퍼스트 블러드 따내기", "제어 와드 5개 이상 설치", "상대 라이너와 CS 30개 차이", "전체 데스 3회 이하 유지", "적 넥서스 내가 부수기", "펜타킬/쿼드라킬 달성"],
+    'en_US': ["Win the game", "At least 1 Solokill", "Objective (Dragon/Baron) Steal", "Highest Damage in match", "Zero Death Game", "Get First Blood", "Place 5+ Control Wards", "30+ CS Gap with opponent", "Under 3 Deaths total", "Finish Nexus yourself", "Achieve Penta/Quadrakill"]
   },
   'targets': {
-    'ko_KR': ["영어 한 마디도 안 하기", "영어만 사용하기 (교포 방송)", "죽을 때마다 애교/벌칙 수행", "20분 안에 게임 끝내기", "성공 시 시청자에게 치킨", "한 손으로만 게임하기", "성공 시 노래 한 곡 완창", "실패 시 다음 판 서포터", "성공 시 룰렛 10번 돌리기"],
-    'en_US': ["No English Challenge", "English Only Challenge", "Penalty on every death", "Finish game before 20m", "Giveaway on success", "One-hand play challenge", "Sing a song on success", "If failed, play Supp next", "Spin roulette 10x on success"]
+    'ko_KR': ["영어 한 마디도 안 하기", "영어만 사용하기 (교포 방송)", "죽을 때마다 애교/벌칙 수행", "20분 안에 게임 끝내기", "성공 시 시청자에게 치킨", "한 손으로만 게임하기", "성공 시 노래 한 곡 완창", "실패 시 다음 판 서포터", "성공 시 룰렛 10번 돌리기", "반말로 방송하기", "존댓말로만 채팅치기"],
+    'en_US': ["No English Challenge", "English Only Challenge", "Penalty on every death", "Finish game before 20m", "Giveaway on success", "One-hand play challenge", "Sing a song on success", "If failed, play Supp next", "Spin roulette 10x on success", "Talk in a funny accent", "Blindfolded for 1 min"]
   }
 };
 
@@ -40,7 +40,16 @@ const BALANCE_SCENARIOS = {
     ["실력은 브론즈인데 티어는 챌린저", "실력은 챌린저인데 티어는 브론즈"],
     ["한 판 할 때마다 10만원 받기", "롤 월드 챔피언십 우승하기"],
     ["내 펜타킬이 상대 서포터한테 뺏기기", "상대 펜타킬을 내가 뺏기 (전체 채팅으로 욕먹음)"],
-    ["야스오 장인 되기", "티모 장인 되기"]
+    ["야스오 장인 되기", "티모 장인 되기"],
+    ["D점멸", "F점멸"],
+    ["라면 먹으면서 롤 하기", "화장실 참으면서 롤 하기"],
+    ["10연승 하고 바로 10연패 하기", "평생 승패승패 반복하기"],
+    ["우리팀 정글이 갱 안 오기", "우리팀 서폿이 CS 뺏어먹기"],
+    ["펜타킬 하고 패배", "0/10/0 하고 승리"],
+    ["리 신 음파 다 맞추기", "블리츠크랭크 그랩 다 맞추기"],
+    ["모든 스킨 다 있기 (사용 불가)", "기본 스킨만 있기 (전부 사용 가능)"],
+    ["평생 1픽으로만 게임하기", "평생 5픽으로만 게임하기"],
+    ["적 라이너가 페이커", "우리 팀 라이너가 페이커 (근데 던짐)"]
   ],
   'en_US': [
     ["All Skins Unlocked Forever", "All Champions Level 7 Mastery"],
@@ -50,7 +59,10 @@ const BALANCE_SCENARIOS = {
     ["LoL without Flash", "LoL without Wards"],
     ["Bronze Skill but Challenger Tier", "Challenger Skill but Bronze Tier"],
     ["Get $100 per game", "Win Worlds Championship once"],
-    ["Your Pentakill stolen by support", "Steal enemy Pentakill (Get flamed)"]
+    ["Your Pentakill stolen by support", "Steal enemy Pentakill (Get flamed)"],
+    ["Flash on D", "Flash on F"],
+    ["Lose with a Pentakill", "Win with 0/10/0"],
+    ["Always pick first", "Always pick last"]
   ]
 };
 
@@ -69,7 +81,11 @@ const FORTUNES = {
     "Great fortune! You will find a forgotten 10-dollar bill in your old jacket.",
     "Your next Hextech chest will contain a Mythic skin!",
     "Today, everyone you meet will be exceptionally kind to you.",
-    "Success is coming. Just keep doing what you're doing."
+    "Success is coming. Just keep doing what you're doing.",
+    "You will wake up tomorrow feeling like you actually slept well.",
+    "Your crush will message you. It's to borrow money, but it's a start.",
+    "Fortune: You will carry your team today.",
+    "Luck is on your side. Go buy a lottery ticket (but don't blame me)."
   ],
   'ko_KR': [
     "오늘의 행운: 게임에서 지겠지만 실력 탓은 아닙니다. 팀운입니다.",
@@ -83,7 +99,13 @@ const FORTUNES = {
     "초대박 운세: 오늘 당신이 하는 모든 일이 성공할 것입니다. 숨만 쉬어도 이득!",
     "조언: 오늘 게임 중 누군가 당신을 욕한다면 '역시 이상호'라고 대답하세요.",
     "행운: 오늘 첫 판을 이기면 연승 가도를 달릴 수 있습니다.",
-    "주의: 오늘 당신의 서포터는 CS를 당신보다 더 잘 먹을 예정입니다."
+    "주의: 오늘 당신의 서포터는 CS를 당신보다 더 잘 먹을 예정입니다.",
+    "길조: 길 가다 5만원권을 줍게 될지도 모릅니다. 땅만 보고 걸으세요.",
+    "운세: 오늘 팀에 트롤이 없을 확률이 99%입니다. 남은 1%는 당신일 수도?",
+    "행운: 오늘 당신의 드립이 시청자들에게 폭발적인 반응을 얻을 것입니다.",
+    "예감: 상자를 까면 당신이 원하는 스킨이 나올 것입니다.",
+    "당신의 매력: 오늘따라 아주 잘생겨/예뻐 보입니다. 캠을 켜세요!",
+    "도망가세요. 지금 당장."
   ]
 };
 
@@ -290,22 +312,26 @@ function initMissionRoulette() {
   startBtn.addEventListener('click', async () => {
     if (startBtn.disabled) return; startBtn.disabled = true;
     populateStrip('roulette-champ', currentState.champions.map(c => c.name));
-    populateStrip('roulette-action', MISSION_DATA.actions[currentState.locale] || MISSION_DATA.actions['en_US']);
-    populateStrip('roulette-target', MISSION_DATA.targets[currentState.locale] || MISSION_DATA.targets['en_US']);
-    const strips = [document.querySelector('#roulette-champ .roulette-strip'), document.querySelector('#roulette-action .roulette-strip'), document.querySelector('#roulette-target .roulette-strip')];
-    const spin = (idx) => new Promise(res => { 
-      const s = strips[idx], cnt = s.children.length / 7, target = Math.floor(Math.random() * cnt) + (cnt * 3);
+    const spin = (stripId, items) => new Promise(res => { 
+      populateStrip(stripId, items); const s = document.querySelector(`#${stripId} .roulette-strip`), cnt = items.length, target = Math.floor(Math.random() * cnt) + (cnt * 3);
       s.style.transition = 'none'; s.style.transform = 'translateY(0)';
       setTimeout(() => { s.style.transition = 'transform 4s cubic-bezier(0.1, 0, 0.1, 1)'; s.style.transform = `translateY(-${target * 120}px)`; setTimeout(res, 4100); }, 50);
     });
-    await spin(0); await spin(1); await spin(2); startBtn.disabled = false;
+    populateStrip('roulette-action', [], true); populateStrip('roulette-target', [], true);
+    await spin('roulette-champ', currentState.champions.map(c => c.name));
+    await spin('roulette-action', MISSION_DATA.actions[currentState.locale] || MISSION_DATA.actions['en_US']);
+    await spin('roulette-target', MISSION_DATA.targets[currentState.locale] || MISSION_DATA.targets['en_US']);
+    startBtn.disabled = false;
   });
 }
 
 function initBalanceGame() {
   const nextBtn = document.getElementById('balance-next'), optA = document.getElementById('balance-option-a'), optB = document.getElementById('balance-option-b');
   if (!nextBtn) return;
+  const select = (e) => { document.querySelectorAll('.balance-card').forEach(c => c.classList.remove('selected')); e.currentTarget.classList.add('selected'); };
+  optA.addEventListener('click', select); optB.addEventListener('click', select);
   const pick = () => {
+    document.querySelectorAll('.balance-card').forEach(c => c.classList.remove('selected'));
     const scenarios = BALANCE_SCENARIOS[currentState.locale] || BALANCE_SCENARIOS['en_US'], s = scenarios[Math.floor(Math.random() * scenarios.length)];
     optA.querySelector('.option-text').textContent = s[0]; optB.querySelector('.option-text').textContent = s[1];
   };
@@ -319,11 +345,8 @@ async function pickRandomChampion(role) {
     const filtered = Object.values(data.data).filter(c => ROLE_OVERRIDES[role]?.includes(c.id));
     const champBase = (filtered.length ? filtered : Object.values(data.data))[Math.floor(Math.random() * (filtered.length || 1))];
     const fullRes = await fetch(`${CONFIG.DATA_DRAGON_BASE}/${currentState.version}/data/${currentState.locale}/champion/${champBase.id}.json`), fullData = await fullRes.json(), champ = fullData.data[champBase.id];
-    
-    // Spinning effect for champion
     const nameEl = document.getElementById('champ-name');
-    let rolls = 0; const interval = setInterval(() => { nameEl.textContent = currentState.champions[Math.floor(Math.random() * currentState.champions.length)].name; rolls++; if(rolls > 20) { clearInterval(interval); finalize(); } }, 150);
-
+    let rolls = 0; const interval = setInterval(() => { nameEl.textContent = currentState.champions[Math.floor(Math.random() * currentState.champions.length)].name; rolls++; if(rolls > 25) { clearInterval(interval); finalize(); } }, 150);
     const finalize = () => {
       currentState.currentSkins = champ.skins; currentState.skinIndex = 0; currentState.currentChampId = champ.id;
       updateSkinDisplay(champ.id); nameEl.textContent = champ.name;
