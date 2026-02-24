@@ -37,6 +37,10 @@
           <span class="icon">🎯</span>
           <span data-i18n="tab-mission">Missions</span>
         </button>
+        <button class="nav-btn" data-tab="balance-game">
+          <span class="icon">⚖️</span>
+          <span data-i18n="tab-balance">Balance</span>
+        </button>
       </nav>
       <div class="sidebar-footer">
         <div class="premium-theme-toggle">
@@ -185,20 +189,40 @@
           <div class="roulette-group">
             <div class="roulette-box" id="roulette-champ">
               <div class="roulette-label">CHAMPION</div>
-              <div class="roulette-window"><div class="roulette-strip"></div></div>
+              <div class="roulette-window"><div class="roulette-strip"><div class="roulette-item">???</div></div></div>
             </div>
             <div class="roulette-box" id="roulette-action">
               <div class="roulette-label">ACTION</div>
-              <div class="roulette-window"><div class="roulette-strip"></div></div>
+              <div class="roulette-window"><div class="roulette-strip"><div class="roulette-item">???</div></div></div>
             </div>
             <div class="roulette-box" id="roulette-target">
               <div class="roulette-label">GOAL</div>
-              <div class="roulette-window"><div class="roulette-strip"></div></div>
+              <div class="roulette-window"><div class="roulette-strip"><div class="roulette-item">???</div></div></div>
             </div>
           </div>
           <div class="mission-controls">
             <button id="mission-start" class="primary-btn big-btn">SPIN MISSIONS</button>
           </div>
+        </div>
+      </div>
+
+      <!-- Balance Game -->
+      <div id="balance-game" class="tab-content">
+        <div class="toolkit-header">
+          <h2 data-i18n="tab-balance">LoL Balance Game</h2>
+          <p>Choose your ultimate dilemma</p>
+        </div>
+        <div class="balance-container">
+          <div class="balance-card left" id="balance-option-a">
+            <div class="option-text">Option A</div>
+          </div>
+          <div class="balance-vs">VS</div>
+          <div class="balance-card right" id="balance-option-b">
+            <div class="option-text">Option B</div>
+          </div>
+        </div>
+        <div class="balance-controls">
+          <button id="balance-next" class="primary-btn big-btn">NEXT QUESTION</button>
         </div>
       </div>
     </main>
