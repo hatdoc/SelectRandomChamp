@@ -21,12 +21,12 @@ const TRANSLATIONS = {
 
 const MISSION_DATA = {
   'actions': {
-    'ko_KR': ["킬 달성", "오브젝트 스틸", "5인 궁극기", "CS 차이 벌리기", "솔로킬", "데스 제로", "퍼스트 블러드", "바론/용 스틸", "제어 와드 구매"],
-    'en_US': ["Kills", "Object Steals", "5-Man Ult", "CS Difference", "Solokill", "Death zero", "First Blood", "Baron/Dragon Steal", "Control Ward Buying"]
+    'ko_KR': ["노데스 승리", "오브젝트 스틸", "5인 궁극기 대박", "솔로킬 따내기", "퍼스트 블러드", "바론/용 스틸", "제어 와드 5개 설치", "팀 내 딜량 1위", "상대 정글 몬스터 처치"],
+    'en_US': ["Zero Death Win", "Object Steal", "5-Man Ult", "Solo Kill", "First Blood", "Baron/Dragon Steal", "Buy 5 Pink Wards", "Highest Damage", "Counter Jungling"]
   },
   'targets': {
-    'ko_KR': ["10회 이상", "5회 미만 유지", "한 번도 죽지 않기", "팀에서 1등", "20분 안에 달성", "3번 연속 성공", "눈 감고 하기", "말 안하고 하기", "치킨 걸고 하기"],
-    'en_US': ["More than 10 times", "Under 5 deaths", "Zero death challenge", "Highest in team", "Before 20 mins", "3 times in a row", "Blindfolded", "No talking challenge", "Winner Winner Chicken Dinner"]
+    'ko_KR': ["무조건 성공하기", "20분 안에 달성", "채팅 한 번도 안 치고 하기", "죽을 때마다 벌칙 수행", "상대 도발하며 하기", "노데스로 성공하기", "팀원 칭찬 들으며 하기", "성공 시 시청자에게 선물", "실패 시 다음 판 서포터"],
+    'en_US': ["Must Succeed", "Before 20 mins", "No Chatting Challenge", "Penalty on every death", "With Emote Spamming", "Zero Death Challenge", "Get a compliment from team", "Giveaway on success", "If failed, play Supp next"]
   }
 };
 
@@ -52,7 +52,12 @@ const FORTUNES = {
     "You will wake up tomorrow feeling like you need more sleep.",
     "Someone is thinking about you. It's your bank, reminding you of your balance.",
     "You are talented, intelligent, and wise. Wrong app, sorry.",
-    "Today's advice: If you can't convince them, confuse them."
+    "Today's advice: If you can't convince them, confuse them.",
+    "Great fortune! You will find a forgotten 10-dollar bill in your old jacket.",
+    "Your next Hextech chest will contain a Mythic skin!",
+    "Today, everyone you meet will be exceptionally kind to you.",
+    "Success is coming. Just keep doing what you're doing.",
+    "You are the main character today. Enjoy the spotlight!"
   ],
   'ko_KR': [
     "오늘의 행운: 게임에서 지겠지만 실력 탓은 아닙니다. 팀운입니다.",
@@ -85,6 +90,11 @@ const FORTUNES = {
     "당신의 미래: 아주 밝습니다. 너무 밝아서 눈이 부셔 아무것도 안 보일 정도입니다.",
     "오늘의 깨달음: 돈으로 행복을 살 순 없지만, 자전거 위에서 우는 것보단 페라리 안에서 우는 게 낫습니다.",
     "운세: 오늘 당신의 드립은 아무도 웃기지 못할 예정입니다.",
+    "초대박 운세: 오늘 당신이 하는 모든 일이 성공할 것입니다. 숨만 쉬어도 이득!",
+    "기쁜 소식: 오랫동안 기다려온 연락이 오늘 드디어 옵니다.",
+    "행운의 예감: 오늘 산 복권이 5등은 당첨될 것 같습니다.",
+    "당신의 매력: 오늘따라 당신의 미소가 아주 치명적입니다. 거울을 보세요.",
+    "보너스: 오늘 야식을 먹어도 몸무게가 변하지 않는 마법 같은 일이 일어납니다.",
     "도망가세요. 지금 당장."
   ]
 };
@@ -440,7 +450,6 @@ function initTeamSplitter() {
       inputs[0].value = inputs[1].value;
       inputs[1].value = temp;
       
-      // Also swap the direction if it's > or <
       const gapBtn = row.querySelector('.gap-btn');
       if (gapBtn.textContent === '>') gapBtn.textContent = '<';
       else if (gapBtn.textContent === '<') gapBtn.textContent = '>';
@@ -496,19 +505,27 @@ function initMissionRoulette() {
     populateStrip('roulette-target', targets);
 
     const strips = document.querySelectorAll('.roulette-strip');
+    
+    // Sequence timing
+    const spinDuration = 3000;
+    const interval = 5000;
+
     strips.forEach((strip, i) => {
       const itemsCount = strip.children.length / 7;
       const targetIdx = Math.floor(Math.random() * itemsCount) + (itemsCount * 3);
       const offset = targetIdx * 120;
+      
       strip.style.transition = 'none';
       strip.style.transform = 'translateY(0)';
+      
+      // Delay the start of each wheel to end sequentially
       setTimeout(() => {
-        strip.style.transition = `transform ${2.5 + i * 0.8}s cubic-bezier(0.1, 0, 0.1, 1)`;
+        strip.style.transition = `transform ${spinDuration / 1000}s cubic-bezier(0.1, 0, 0.1, 1)`;
         strip.style.transform = `translateY(-${offset}px)`;
-      }, 50);
+      }, i * interval);
     });
 
-    setTimeout(() => { startBtn.disabled = false; }, 4500);
+    setTimeout(() => { startBtn.disabled = false; }, (strips.length - 1) * interval + spinDuration + 500);
   });
 }
 
@@ -519,7 +536,6 @@ async function pickRandomChampion(role) {
     const data = await res.json(), filtered = Object.values(data.data).filter(c => ROLE_OVERRIDES[role]?.includes(c.id));
     const champBase = (filtered.length ? filtered : Object.values(data.data))[Math.floor(Math.random() * (filtered.length || 1))];
     
-    // Fetch full data for skins
     const fullRes = await fetch(`${CONFIG.DATA_DRAGON_BASE}/${currentState.version}/data/${currentState.locale}/champion/${champBase.id}.json`);
     const fullData = await fullRes.json();
     const champ = fullData.data[champBase.id];
@@ -531,13 +547,11 @@ async function pickRandomChampion(role) {
     updateSkinDisplay(champ.id);
     document.getElementById('champ-name').textContent = champ.name;
     
-    // Voice playback
     const voiceUrl = `https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-choose-vo/${champ.key}.ogg`;
     const audio = new Audio(voiceUrl);
     audio.volume = 0.5;
     audio.play().catch(e => console.log("Audio play blocked"));
 
-    // Analysis Links
     const opgg = document.getElementById('opgg-link'), lolps = document.getElementById('lolps-link');
     opgg.href = `https://www.op.gg/champions/${champ.id.toLowerCase()}/build`;
     lolps.href = `https://lol.ps/champion/${champ.key}`;
