@@ -30,7 +30,18 @@ const FORTUNES = {
     "Luck: 100%. Skill: 0%. You'll fit right in on Reddit.",
     "Run away. Right now.",
     "Your future is bright. Unlike your teammate's brain.",
-    "Fortune: You will hit every skillshot... in your dreams."
+    "Fortune: You will hit every skillshot... in your dreams.",
+    "A surprise is waiting for you at home. It's probably bills.",
+    "You will find money on the street today. Specifically, a 10-won coin.",
+    "Today is your lucky day! For someone else, not you.",
+    "You will meet the love of your life today. They will be NPCs.",
+    "Fortune: You will be hungry again in 3 hours.",
+    "Expect a phone call. It's a scammer, but at least someone wants to talk to you.",
+    "Your hard work will pay off... eventually. Maybe in the next life.",
+    "You will wake up tomorrow feeling like you need more sleep.",
+    "Someone is thinking about you. It's your bank, reminding you of your balance.",
+    "You are talented, intelligent, and wise. Wrong app, sorry.",
+    "Today's advice: If you can't convince them, confuse them."
   ],
   'ko_KR': [
     "오늘의 행운: 게임에서 지겠지만 실력 탓은 아닙니다. 팀운입니다.",
@@ -47,6 +58,22 @@ const FORTUNES = {
     "행운: 적 팀에 당신보다 못하는 사람이 딱 한 명 있습니다. 물론 찾기 힘들 겁니다.",
     "운세: 오늘 연패 탈출의 기회가 보입니다. 아, 방금 사라졌네요. 까비.",
     "팁: 오늘 게임이 계속 안 풀린다면 모니터를 끄고 잠을 자는 것이 인생에 이득입니다.",
+    "역시 이상호",
+    "오늘의 운세: 대길(大吉)! 하지만 당신의 지갑은 대흉(大凶).",
+    "행운의 메시지: 당신은 혼자가 아닙니다. 당신의 빚이 늘 곁에 있으니까요.",
+    "오늘의 날씨: 맑음. 하지만 당신의 앞날은 흐림.",
+    "운세: 모르는 번호로 전화가 오면 받지 마세요. 인생의 진리를 깨닫게 될 겁니다 (광고임).",
+    "당신의 운명: 오늘 편의점에 가면 사고 싶은 물건이 딱 하나 부족할 겁니다.",
+    "주의: 오늘 당신이 본 첫 번째 고양이는 당신을 무시할 겁니다. 평소랑 같네요.",
+    "오늘의 행운: 길에서 500원을 줍게 됩니다. 하지만 600원짜리 물건을 사고 싶어질 겁니다.",
+    "당신이 오늘 가장 많이 할 말: '아... 진짜...'",
+    "행운의 색: 투명색. 아무것도 안 보인다면 정상입니다.",
+    "오늘의 조언: 숨을 쉬세요. 안 쉬면 죽습니다.",
+    "로또를 사보세요. 누군가는 당첨되겠죠. 당신은 아님.",
+    "오늘의 패션: 이불. 밖은 위험합니다.",
+    "당신의 미래: 아주 밝습니다. 너무 밝아서 눈이 부셔 아무것도 안 보일 정도입니다.",
+    "오늘의 깨달음: 돈으로 행복을 살 순 없지만, 자전거 위에서 우는 것보단 페라리 안에서 우는 게 낫습니다.",
+    "운세: 오늘 당신의 드립은 아무도 웃기지 못할 예정입니다.",
     "도망가세요. 지금 당장."
   ]
 };
