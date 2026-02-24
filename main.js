@@ -397,10 +397,31 @@ function initTeamSplitter() {
   const list = document.getElementById('team-pair-list'), addBtn = document.getElementById('add-pair-btn');
   function createRow() {
     const row = document.createElement('div'); row.className = 'team-pair-row';
-    row.innerHTML = `<input type="text" class="pair-input" placeholder="BLUE"><button class="gap-btn">=</button><input type="text" class="pair-input" placeholder="RED">`;
+    row.innerHTML = `
+      <input type="text" class="pair-input" placeholder="BLUE">
+      <button class="gap-btn">=</button>
+      <input type="text" class="pair-input" placeholder="RED">
+      <button class="swap-btn" title="Swap Names">⇄</button>
+    `;
+    
     row.querySelector('.gap-btn').addEventListener('click', e => {
-      const ops = ['=', '>', '<']; const curr = ops.indexOf(e.target.textContent); e.target.textContent = ops[(curr + 1) % ops.length];
+      const ops = ['=', '>', '<']; 
+      const curr = ops.indexOf(e.target.textContent); 
+      e.target.textContent = ops[(curr + 1) % ops.length];
     });
+
+    row.querySelector('.swap-btn').addEventListener('click', () => {
+      const inputs = row.querySelectorAll('.pair-input');
+      const temp = inputs[0].value;
+      inputs[0].value = inputs[1].value;
+      inputs[1].value = temp;
+      
+      // Also swap the direction if it's > or <
+      const gapBtn = row.querySelector('.gap-btn');
+      if (gapBtn.textContent === '>') gapBtn.textContent = '<';
+      else if (gapBtn.textContent === '<') gapBtn.textContent = '>';
+    });
+
     list.appendChild(row);
   }
   addBtn.addEventListener('click', createRow);
