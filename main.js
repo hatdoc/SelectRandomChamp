@@ -42,27 +42,25 @@ const BALANCE_SCENARIOS = {
     ["내 펜타킬이 상대 서포터한테 뺏기기", "상대 펜타킬을 내가 뺏기 (전체 채팅으로 욕먹음)"],
     ["야스오 장인 되기", "티모 장인 되기"],
     ["D점멸", "F점멸"],
-    ["라면 먹으면서 롤 하기", "화장실 참으면서 롤 하기"],
     ["10연승 하고 바로 10연패 하기", "평생 승패승패 반복하기"],
     ["우리팀 정글이 갱 안 오기", "우리팀 서폿이 CS 뺏어먹기"],
-    ["펜타킬 하고 패배", "0/10/0 하고 승리"],
     ["리 신 음파 다 맞추기", "블리츠크랭크 그랩 다 맞추기"],
     ["모든 스킨 다 있기 (사용 불가)", "기본 스킨만 있기 (전부 사용 가능)"],
     ["평생 1픽으로만 게임하기", "평생 5픽으로만 게임하기"],
-    ["적 라이너가 페이커", "우리 팀 라이너가 페이커 (근데 던짐)"]
+    ["적 팀에 티모 5명", "우리 팀에 유미 4명 (내가 원딜)"],
+    ["채팅 금지 1년", "탈주 패널티 100판"],
+    ["이길 때마다 10만원 잃기", "질 때마다 5만원 받기 (랭크 점수는 하락)"]
   ],
   'en_US': [
-    ["All Skins Unlocked Forever", "All Champions Level 7 Mastery"],
+    ["All Skins Unlocked", "All Champions Mastery 7"],
     ["4 Troll Teammates", "5 Scripting Opponents"],
-    ["Win Game with 0/10/0 Score", "Lose Game with 10/0/0 Score"],
-    ["Play only Teemo forever", "Play only Yuumi forever"],
-    ["LoL without Flash", "LoL without Wards"],
-    ["Bronze Skill but Challenger Tier", "Challenger Skill but Bronze Tier"],
-    ["Get $100 per game", "Win Worlds Championship once"],
-    ["Your Pentakill stolen by support", "Steal enemy Pentakill (Get flamed)"],
-    ["Flash on D", "Flash on F"],
-    ["Lose with a Pentakill", "Win with 0/10/0"],
-    ["Always pick first", "Always pick last"]
+    ["Win with 0/10/0", "Lose with 10/0/0"],
+    ["Play only Teemo", "Play only Yuumi"],
+    ["No Flash LoL", "No Wards LoL"],
+    ["Bronze Skill, Challenger Tier", "Challenger Skill, Bronze Tier"],
+    ["Get $100 per game", "Win Worlds once"],
+    ["Stolen Pentakill", "Steal enemy Pentakill"],
+    ["Flash on D", "Flash on F"]
   ]
 };
 
@@ -78,14 +76,9 @@ const FORTUNES = {
     "Run away. Right now.",
     "Your future is bright. Unlike your teammate's brain.",
     "Fortune: You will hit every skillshot... in your dreams.",
-    "Great fortune! You will find a forgotten 10-dollar bill in your old jacket.",
+    "Great fortune! You will find money in an old jacket.",
     "Your next Hextech chest will contain a Mythic skin!",
-    "Today, everyone you meet will be exceptionally kind to you.",
-    "Success is coming. Just keep doing what you're doing.",
-    "You will wake up tomorrow feeling like you actually slept well.",
-    "Your crush will message you. It's to borrow money, but it's a start.",
-    "Fortune: You will carry your team today.",
-    "Luck is on your side. Go buy a lottery ticket (but don't blame me)."
+    "Success is coming. Just keep doing what you're doing."
   ],
   'ko_KR': [
     "오늘의 행운: 게임에서 지겠지만 실력 탓은 아닙니다. 팀운입니다.",
@@ -186,45 +179,30 @@ function initPinball() {
     pins = []; spinners = [];
     canvas.width = canvas.parentElement.clientWidth; canvas.height = canvas.parentElement.clientHeight || 450;
     const rows = 12, spacingX = canvas.width / 14, spacingY = 25;
-    for (let r = 0; r < rows; r++) {
-      const offset = (r % 2) * (spacingX / 2);
-      for (let c = 0; c < 15; c++) {
-        const x = c * spacingX + offset, y = 80 + r * spacingY;
-        if (r > 2 && r < rows - 2 && c % 4 === 0 && Math.random() > 0.5) spinners.push({ x, y, angle: 0, speed: 0.05 + Math.random() * 0.05, length: 40 });
-        else pins.push({ x, y });
-      }
-    }
+    for (let r = 0; r < rows; r++) { const offset = (r % 2) * (spacingX / 2); for (let c = 0; c < 15; c++) { const x = c * spacingX + offset, y = 80 + r * spacingY; if (r > 2 && r < rows - 2 && c % 4 === 0 && Math.random() > 0.5) spinners.push({ x, y, angle: 0, speed: 0.05 + Math.random() * 0.05, length: 40 }); else pins.push({ x, y }); } }
   }
 
   startBtn.addEventListener('click', () => {
     if (isRunning) return;
     const opts = (input.value || "A,B,C,D").split(',').map(o => o.trim()).filter(o => o);
     if (!opts.length) return;
-    focusTool('pinball-tool'); setup(); isRunning = true;
-    balls = [];
-    const tempBalls = [];
-    opts.forEach((opt, i) => { for(let j=0; j<30; j++) tempBalls.push({ label: opt, color: `hsl(${(i * 360 / opts.length)}, 70%, 60%)` }); });
+    focusTool('pinball-tool'); setup(); isRunning = true; balls = [];
+    const tempBalls = []; opts.forEach((opt, i) => { for(let j=0; j<30; j++) tempBalls.push({ label: opt, color: `hsl(${(i * 360 / opts.length)}, 70%, 60%)` }); });
     for (let i = tempBalls.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [tempBalls[i], tempBalls[j]] = [tempBalls[j], tempBalls[i]]; }
     balls = tempBalls.map((b, i) => ({ x: canvas.width / 2 + (Math.random() - 0.5) * 80, y: -20 - (i * 15), r: 8, label: b.label, color: b.color, vx: (Math.random() - 0.5) * 3, vy: 1, finished: false }));
 
     function loop() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = '#c89b3c'; pins.forEach(p => { ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI * 2); ctx.fill(); });
-      ctx.strokeStyle = '#00cfbc'; ctx.lineWidth = 3;
-      spinners.forEach(s => { s.angle += s.speed; const x1 = s.x + Math.cos(s.angle) * 20, y1 = s.y + Math.sin(s.angle) * 20; const x2 = s.x - Math.cos(s.angle) * 20, y2 = s.y - Math.sin(s.angle) * 20; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); });
+      ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = '#c89b3c'; pins.forEach(p => { ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI * 2); ctx.fill(); }); ctx.strokeStyle = '#00cfbc'; ctx.lineWidth = 3; spinners.forEach(s => { s.angle += s.speed; const x1 = s.x + Math.cos(s.angle) * 20, y1 = s.y + Math.sin(s.angle) * 20; const x2 = s.x - Math.cos(s.angle) * 20, y2 = s.y - Math.sin(s.angle) * 20; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); });
       let active = 0;
       balls.forEach(b => {
-        if (b.finished) return; active++;
-        b.vy += gravity; b.x += b.vx; b.y += b.vy;
+        if (b.finished) return; active++; b.vy += gravity; b.x += b.vx; b.y += b.vy;
         pins.forEach(p => { const dx = b.x - p.x, dy = b.y - p.y, dist = Math.sqrt(dx*dx + dy*dy); if (dist < b.r + 2) { const angle = Math.atan2(dy, dx), speed = Math.sqrt(b.vx*b.vx + b.vy*b.vy); b.vx = Math.cos(angle) * speed * bounciness + (Math.random()-0.5); b.vy = Math.sin(angle) * speed * bounciness; b.y += b.vy; } });
         spinners.forEach(s => { const x1 = s.x + Math.cos(s.angle) * 20, y1 = s.y + Math.sin(s.angle) * 20, x2 = s.x - Math.cos(s.angle) * 20, y2 = s.y - Math.sin(s.angle) * 20, l2 = 40 * 40, t = Math.max(0, Math.min(1, ((b.x - x1) * (x2 - x1) + (b.y - y1) * (y2 - y1)) / l2)), closestX = x1 + t * (x2 - x1), closestY = y1 + t * (y2 - y1), dx = b.x - closestX, dy = b.y - closestY, dist = Math.sqrt(dx * dx + dy * dy); if (dist < b.r + 2) { const nx = dx / dist, ny = dy / dist, dot = b.vx * nx + b.vy * ny; b.vx = (b.vx - 2 * dot * nx) * bounciness + (Math.random() - 0.5) * 4; b.vy = (b.vy - 2 * dot * ny) * bounciness - 2; b.x = closestX + nx * (b.r + 3); b.y = closestY + ny * (b.r + 3); } });
         if (b.x < b.r || b.x > canvas.width - b.r) { b.vx *= -0.7; b.x = b.x < b.r ? b.r : canvas.width - b.r; }
         if (b.y > canvas.height - 10) { b.finished = true; b.finishTime = Date.now(); }
-        ctx.fillStyle = b.color; ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = "#fff"; ctx.font = "bold 9px Spiegel"; ctx.textAlign = "center"; ctx.fillText(b.label.substring(0, 3), b.x, b.y + 3);
+        ctx.fillStyle = b.color; ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = "#fff"; ctx.font = "bold 9px Spiegel"; ctx.textAlign = "center"; ctx.fillText(b.label.substring(0, 3), b.x, b.y + 3);
       });
-      if (active > 0) requestAnimationFrame(loop);
-      else { isRunning = false; const last = balls.reduce((p, c) => p.finishTime > c.finishTime ? p : c); showBigResult("THE FINAL WINNER", last.label); }
+      if (active > 0) requestAnimationFrame(loop); else { isRunning = false; const last = balls.reduce((p, c) => p.finishTime > c.finishTime ? p : c); showBigResult("THE FINAL WINNER", last.label); }
     }
     loop();
   });
@@ -232,50 +210,24 @@ function initPinball() {
 }
 
 function initLadder() {
-  const canvas = document.getElementById('ladder-canvas');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d'), startBtn = document.getElementById('ladder-start'), skipBtn = document.getElementById('ladder-skip');
-  const pIn = document.getElementById('ladder-players-input'), rIn = document.getElementById('ladder-results-input');
+  const canvas = document.getElementById('ladder-canvas'); if (!canvas) return;
+  const ctx = canvas.getContext('2d'), startBtn = document.getElementById('ladder-start'), skipBtn = document.getElementById('ladder-skip'), pIn = document.getElementById('ladder-players-input'), rIn = document.getElementById('ladder-results-input');
   let isRunning = false, isSkipped = false;
-  function drawInitial() {
-    canvas.width = canvas.parentElement.clientWidth; canvas.height = 400; ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.strokeStyle = '#c89b3c'; ctx.lineWidth = 2;
-    const spacing = canvas.width / 3;
-    for(let i=1; i<=2; i++) { const x = spacing * i; ctx.beginPath(); ctx.moveTo(x, 50); ctx.lineTo(x, 350); ctx.stroke(); ctx.fillStyle = '#f0e6d2'; ctx.font = 'bold 14px Spiegel'; ctx.textAlign = 'center'; ctx.fillText("Player " + i, x, 40); ctx.fillText("Result " + i, x, 370); }
-  }
+  function drawInitial() { canvas.width = canvas.parentElement.clientWidth; canvas.height = 400; ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.strokeStyle = '#c89b3c'; ctx.lineWidth = 2; const spacing = canvas.width / 3; for(let i=1; i<=2; i++) { const x = spacing * i; ctx.beginPath(); ctx.moveTo(x, 50); ctx.lineTo(x, 350); ctx.stroke(); ctx.fillStyle = '#f0e6d2'; ctx.font = 'bold 14px Spiegel'; ctx.textAlign = 'center'; ctx.fillText("Player " + i, x, 40); ctx.fillText("Result " + i, x, 370); } }
   startBtn.addEventListener('click', () => {
-    if (isRunning) return;
-    const players = (pIn.value || "A,B,C,D,E").split(',').map(s => s.trim()).filter(s => s);
-    const results = (rIn.value || "1,2,3,4,5").split(',').map(s => s.trim()).filter(s => s);
-    const count = Math.min(players.length, results.length); if (count < 2) return;
-    focusTool('ladder-tool'); isRunning = true; isSkipped = false; skipBtn.classList.remove('hidden');
-    const spacing = canvas.width / (count + 1), lines = [];
-    for (let i = 0; i < count - 1; i++) { for (let j = 0; j < 15; j++) lines.push({ from: i, to: i + 1, y: 70 + Math.random() * 270 }); }
-    const sortedLines = [...lines].sort((a,b) => a.y - b.y);
-    let pathIdx = 0;
+    if (isRunning) return; const players = (pIn.value || "A,B,C,D,E").split(',').map(s => s.trim()).filter(s => s), results = (rIn.value || "1,2,3,4,5").split(',').map(s => s.trim()).filter(s => s), count = Math.min(players.length, results.length); if (count < 2) return;
+    focusTool('ladder-tool'); isRunning = true; isSkipped = false; skipBtn.classList.remove('hidden'); const spacing = canvas.width / (count + 1), lines = []; for (let i = 0; i < count - 1; i++) { for (let j = 0; j < 15; j++) lines.push({ from: i, to: i + 1, y: 70 + Math.random() * 270 }); }
+    const sortedLines = [...lines].sort((a,b) => a.y - b.y); let pathIdx = 0;
     function finish() { isRunning = false; skipBtn.classList.add('hidden'); const summary = players.map((p, i) => { let cx = i; sortedLines.forEach(l => { if (l.from === cx) cx = l.to; else if (l.to === cx) cx = l.from; }); return `${p}: ${results[cx]}`; }).join('\n'); showBigResult("LADDER RESULTS", summary); }
     function revealPath() {
       if (isSkipped) { drawAllPaths(); return; }
       ctx.clearRect(0, 0, canvas.width, canvas.height); drawStatic(players, results, count, spacing, lines, pathIdx);
-      let currX = pathIdx, currY = 60, pathPoints = [{x: spacing * (currX + 1), y: currY}];
-      sortedLines.forEach(l => { if (l.from === currX) { pathPoints.push({x: spacing*(currX+1), y: l.y}); currX = l.to; pathPoints.push({x: spacing*(currX+1), y: l.y}); } else if (l.to === currX) { pathPoints.push({x: spacing*(currX+1), y: l.y}); currX = l.from; pathPoints.push({x: spacing*(currX+1), y: l.y}); } });
-      pathPoints.push({x: spacing * (currX + 1), y: 350});
+      let currX = pathIdx, currY = 60, pathPoints = [{x: spacing * (currX + 1), y: currY}]; sortedLines.forEach(l => { if (l.from === currX) { pathPoints.push({x: spacing*(currX+1), y: l.y}); currX = l.to; pathPoints.push({x: spacing*(currX+1), y: l.y}); } else if (l.to === currX) { pathPoints.push({x: spacing*(currX+1), y: l.y}); currX = l.from; pathPoints.push({x: spacing*(currX+1), y: l.y}); } }); pathPoints.push({x: spacing * (currX + 1), y: 350});
       let pointIdx = 0;
-      function animateMarker() {
-        if (isSkipped) return drawAllPaths();
-        if (pointIdx < pathPoints.length - 1) {
-          const start = pathPoints[pointIdx], end = pathPoints[pointIdx+1]; let progress = 0;
-          function drawMove() { if (isSkipped) return drawAllPaths(); ctx.clearRect(0, 0, canvas.width, canvas.height); drawStatic(players, results, count, spacing, lines, pathIdx); ctx.strokeStyle = `hsl(${pathIdx * 360 / count}, 80%, 50%)`; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(pathPoints[0].x, pathPoints[0].y); for(let i=0; i<=pointIdx; i++) ctx.lineTo(pathPoints[i].x, pathPoints[i].y); const midX = start.x + (end.x - start.x) * progress, midY = start.y + (end.y - start.y) * progress; ctx.lineTo(midX, midY); ctx.stroke(); ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(midX, midY, 6, 0, Math.PI*2); ctx.fill(); progress += 0.06; if (progress < 1) requestAnimationFrame(drawMove); else { pointIdx++; animateMarker(); } }
-          drawMove();
-        } else { if (pathIdx < count - 1) { pathIdx++; setTimeout(revealPath, 1200); } else finish(); }
-      }
+      function animateMarker() { if (isSkipped) return drawAllPaths(); if (pointIdx < pathPoints.length - 1) { const start = pathPoints[pointIdx], end = pathPoints[pointIdx+1]; let progress = 0; function drawMove() { if (isSkipped) return drawAllPaths(); ctx.clearRect(0, 0, canvas.width, canvas.height); drawStatic(players, results, count, spacing, lines, pathIdx); ctx.strokeStyle = `hsl(${pathIdx * 360 / count}, 80%, 50%)`; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(pathPoints[0].x, pathPoints[0].y); for(let i=0; i<=pointIdx; i++) ctx.lineTo(pathPoints[i].x, pathPoints[i].y); const midX = start.x + (end.x - start.x) * progress, midY = start.y + (end.y - start.y) * progress; ctx.lineTo(midX, midY); ctx.stroke(); ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(midX, midY, 6, 0, Math.PI*2); ctx.fill(); progress += 0.06; if (progress < 1) requestAnimationFrame(drawMove); else { pointIdx++; animateMarker(); } } drawMove(); } else { if (pathIdx < count - 1) { pathIdx++; setTimeout(revealPath, 1200); } else finish(); } }
       animateMarker();
     }
-    function drawStatic(players, results, count, spacing, lines, currentRevealIdx) {
-      ctx.strokeStyle = '#c89b3c'; ctx.lineWidth = 2;
-      for (let i = 0; i < count; i++) { const x = spacing * (i + 1); ctx.beginPath(); ctx.moveTo(x, 60); ctx.lineTo(x, 350); ctx.stroke(); ctx.fillStyle = '#f0e6d2'; ctx.font = 'bold 14px Spiegel'; ctx.textAlign = 'center'; ctx.fillText(players[i], x, 50); ctx.fillText(results[i], x, 370); }
-      lines.forEach(l => { ctx.beginPath(); ctx.moveTo(spacing*(l.from+1), l.y); ctx.lineTo(spacing*(l.to+1), l.y); ctx.stroke(); });
-      for(let p = 0; p < currentRevealIdx; p++) { let cx = p; ctx.strokeStyle = `hsl(${p * 360 / count}, 80%, 50%)`; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(spacing*(cx+1), 60); sortedLines.forEach(l => { if (l.from === cx) { ctx.lineTo(spacing*(cx+1), l.y); cx = l.to; ctx.lineTo(spacing*(cx+1), l.y); } else if (l.to === cx) { ctx.lineTo(spacing*(cx+1), l.y); cx = l.from; ctx.lineTo(spacing*(cx+1), l.y); } }); ctx.lineTo(spacing*(cx+1), 350); ctx.stroke(); }
-    }
+    function drawStatic(players, results, count, spacing, lines, currentRevealIdx) { ctx.strokeStyle = '#c89b3c'; ctx.lineWidth = 2; for (let i = 0; i < count; i++) { const x = spacing * (i + 1); ctx.beginPath(); ctx.moveTo(x, 60); ctx.lineTo(x, 350); ctx.stroke(); ctx.fillStyle = '#f0e6d2'; ctx.font = 'bold 14px Spiegel'; ctx.textAlign = 'center'; ctx.fillText(players[i], x, 50); ctx.fillText(results[i], x, 370); } lines.forEach(l => { ctx.beginPath(); ctx.moveTo(spacing*(l.from+1), l.y); ctx.lineTo(spacing*(l.to+1), l.y); ctx.stroke(); }); for(let p = 0; p < currentRevealIdx; p++) { let cx = p; ctx.strokeStyle = `hsl(${p * 360 / count}, 80%, 50%)`; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(spacing*(cx+1), 60); sortedLines.forEach(l => { if (l.from === cx) { ctx.lineTo(spacing*(cx+1), l.y); cx = l.to; ctx.lineTo(spacing*(cx+1), l.y); } else if (l.to === cx) { ctx.lineTo(spacing*(cx+1), l.y); cx = l.from; ctx.lineTo(spacing*(cx+1), l.y); } }); ctx.lineTo(spacing*(cx+1), 350); ctx.stroke(); } }
     function drawAllPaths() { ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.strokeStyle = '#c89b3c'; ctx.lineWidth = 2; for (let i = 0; i < count; i++) { const x = spacing * (i + 1); ctx.beginPath(); ctx.moveTo(x, 60); ctx.lineTo(x, 350); ctx.stroke(); ctx.fillStyle = '#f0e6d2'; ctx.font = 'bold 14px Spiegel'; ctx.textAlign = 'center'; ctx.fillText(players[i], x, 50); ctx.fillText(results[i], x, 370); } lines.forEach(l => { ctx.beginPath(); ctx.moveTo(spacing*(l.from+1), l.y); ctx.lineTo(spacing*(l.to+1), l.y); ctx.stroke(); }); for(let p = 0; p < count; p++) { let cx = p; ctx.strokeStyle = `hsl(${p * 360 / count}, 80%, 50%)`; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(spacing*(cx+1), 60); sortedLines.forEach(l => { if (l.from === cx) { ctx.lineTo(spacing*(cx+1), l.y); cx = l.to; ctx.lineTo(spacing*(cx+1), l.y); } else if (l.to === cx) { ctx.lineTo(spacing*(cx+1), l.y); cx = l.from; ctx.lineTo(spacing*(cx+1), l.y); } }); ctx.lineTo(spacing*(cx+1), 350); ctx.stroke(); } finish(); }
     revealPath();
   });
@@ -295,29 +247,26 @@ function initTeamSplitter() {
 }
 
 function initFortuneTool() {
-  const startBtn = document.getElementById('fortune-start'), display = document.getElementById('fortune-text');
-  if (!startBtn) return;
+  const startBtn = document.getElementById('fortune-start'), display = document.getElementById('fortune-text'); if (!startBtn) return;
   startBtn.addEventListener('click', () => { const list = FORTUNES[currentState.locale] || FORTUNES['en_US'], f = list[Math.floor(Math.random() * list.length)]; display.style.opacity = 0; setTimeout(() => { display.textContent = f; display.style.opacity = 1; showBigResult(TRANSLATIONS[currentState.locale]['fortune-title'], f); }, 200); });
 }
 
 function initMissionRoulette() {
-  const startBtn = document.getElementById('mission-start');
-  if (!startBtn) return;
+  const startBtn = document.getElementById('mission-start'); if (!startBtn) return;
   function populateStrip(stripId, items, isInitial = false) {
     const strip = document.querySelector(`#${stripId} .roulette-strip`); strip.innerHTML = '';
     if (isInitial) { const div = document.createElement('div'); div.className = 'roulette-item'; div.textContent = '???'; strip.appendChild(div); strip.style.transform = 'translateY(0)'; return; }
     const repeated = [...items, ...items, ...items, ...items, ...items, ...items, ...items]; repeated.forEach(item => { const div = document.createElement('div'); div.className = 'roulette-item'; div.textContent = item; strip.appendChild(div); });
   }
-  populateStrip('roulette-champ', [], true); populateStrip('roulette-action', [], true); populateStrip('roulette-target', [], true);
+  const resetWheels = () => { populateStrip('roulette-champ', [], true); populateStrip('roulette-action', [], true); populateStrip('roulette-target', [], true); };
+  resetWheels();
   startBtn.addEventListener('click', async () => {
-    if (startBtn.disabled) return; startBtn.disabled = true;
-    populateStrip('roulette-champ', currentState.champions.map(c => c.name));
+    if (startBtn.disabled) return; startBtn.disabled = true; resetWheels();
     const spin = (stripId, items) => new Promise(res => { 
       populateStrip(stripId, items); const s = document.querySelector(`#${stripId} .roulette-strip`), cnt = items.length, target = Math.floor(Math.random() * cnt) + (cnt * 3);
       s.style.transition = 'none'; s.style.transform = 'translateY(0)';
-      setTimeout(() => { s.style.transition = 'transform 4s cubic-bezier(0.1, 0, 0.1, 1)'; s.style.transform = `translateY(-${target * 120}px)`; setTimeout(res, 4100); }, 50);
+      setTimeout(() => { s.style.transition = 'transform 3s cubic-bezier(0.1, 0, 0.1, 1)'; s.style.transform = `translateY(-${target * 120}px)`; setTimeout(res, 3100); }, 50);
     });
-    populateStrip('roulette-action', [], true); populateStrip('roulette-target', [], true);
     await spin('roulette-champ', currentState.champions.map(c => c.name));
     await spin('roulette-action', MISSION_DATA.actions[currentState.locale] || MISSION_DATA.actions['en_US']);
     await spin('roulette-target', MISSION_DATA.targets[currentState.locale] || MISSION_DATA.targets['en_US']);
@@ -341,15 +290,12 @@ function initBalanceGame() {
 async function pickRandomChampion(role) {
   currentState.selectedRole = role; showLoading(true);
   try {
-    const res = await fetch(`${CONFIG.DATA_DRAGON_BASE}/${currentState.version}/data/${currentState.locale}/champion.json`), data = await res.json();
-    const filtered = Object.values(data.data).filter(c => ROLE_OVERRIDES[role]?.includes(c.id));
+    const res = await fetch(`${CONFIG.DATA_DRAGON_BASE}/${currentState.version}/data/${currentState.locale}/champion.json`), data = await res.json(), filtered = Object.values(data.data).filter(c => ROLE_OVERRIDES[role]?.includes(c.id));
     const champBase = (filtered.length ? filtered : Object.values(data.data))[Math.floor(Math.random() * (filtered.length || 1))];
     const fullRes = await fetch(`${CONFIG.DATA_DRAGON_BASE}/${currentState.version}/data/${currentState.locale}/champion/${champBase.id}.json`), fullData = await fullRes.json(), champ = fullData.data[champBase.id];
-    const nameEl = document.getElementById('champ-name');
-    let rolls = 0; const interval = setInterval(() => { nameEl.textContent = currentState.champions[Math.floor(Math.random() * currentState.champions.length)].name; rolls++; if(rolls > 25) { clearInterval(interval); finalize(); } }, 150);
+    const nameEl = document.getElementById('champ-name'); let rolls = 0; const interval = setInterval(() => { nameEl.textContent = currentState.champions[Math.floor(Math.random() * currentState.champions.length)].name; rolls++; if(rolls > 20) { clearInterval(interval); finalize(); } }, 150);
     const finalize = () => {
-      currentState.currentSkins = champ.skins; currentState.skinIndex = 0; currentState.currentChampId = champ.id;
-      updateSkinDisplay(champ.id); nameEl.textContent = champ.name;
+      currentState.currentSkins = champ.skins; currentState.skinIndex = 0; currentState.currentChampId = champ.id; updateSkinDisplay(champ.id); nameEl.textContent = champ.name;
       const voice = new Audio(`https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-choose-vo/${champ.key}.ogg`); voice.volume = 0.5; voice.play().catch(() => {});
       document.getElementById('opgg-link').href = `https://www.op.gg/champions/${champ.id.toLowerCase()}/build`; document.getElementById('lolps-link').href = `https://lol.ps/champion/${champ.key}`;
       document.getElementById('result-area').classList.remove('hidden'); document.getElementById('result-area').scrollIntoView({ behavior: 'smooth' });
